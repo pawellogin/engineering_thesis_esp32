@@ -5,7 +5,8 @@
 #include "debug.h"
 #include "config.h"
 #include "utils.h"
-#include "network.h"
+#include "network/wifi.h"
+#include "network/websocket.h"
 
 // ---------------- Networking ----------------
 WiFiUDP udp;
@@ -27,7 +28,7 @@ JsonDocument doc;
 
 // TODO move
 // // ---------------- WebSocket Event ----------------
-void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
+void webSocketEvent2(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
 {
   switch (type)
   {
@@ -73,7 +74,11 @@ void setup()
   LOG_INFO("ESP32 Starting...");
 
   // WIFI and websocket setup
-  setupNetwork(&webSocket, webSocketEvent);
+  if (setupNetwork())
+  {
+    setupWebSocket();
+    broadcastDebug();
+  }
 
   // // UDP
   // udp.begin(udpPort);
@@ -83,9 +88,10 @@ void setup()
 // // ---------------- Loop ----------------
 void loop()
 {
-  webSocket.loop();
+  webSocketLoop();
 
   static unsigned long last = 0;
+
   if (millis() - last > 1000)
   {
     last = millis();

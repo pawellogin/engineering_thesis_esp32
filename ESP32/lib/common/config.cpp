@@ -10,3 +10,4 @@ const char *sta_password = "12341234";
 // General configuration
 const int max_clients = 10;
 unsigned int udp_port = 8000;
+unsigned int ws_port = udp_port + 1;

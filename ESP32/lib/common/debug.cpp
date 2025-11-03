@@ -1,4 +1,6 @@
 #include "debug.h"
+#include "network/dto/messageDTO.h"
+#include "network/websocket.h"
 
 void heartbeatDebug()
 {
@@ -10,7 +12,7 @@ void heartbeatDebug()
 
 static WebSocketsServer *webSocketPtr = nullptr;
 
-void setWebSocket(WebSocketsServer *ws)
+void setDebugWebSocket(WebSocketsServer *ws)
 {
     webSocketPtr = ws;
 }
@@ -20,12 +22,12 @@ void broadcastDebug()
     if (!webSocketPtr)
         return; // safety check
 
-    JsonDocument doc;
-    doc["heartbeat"] = millis();
+    MessageDTO msg;
+    msg.type = MessageType::STATUS;
+    msg.action = MessageAction::BLINK_LED;
+    msg.data = "test debug message";
+    msg.timestamp = millis();
 
-    doc["example"] = "debug message";
-
-    char buffer[256];
-    size_t n = serializeJson(doc, buffer);
-    webSocketPtr->broadcastTXT(buffer, n);
+    String json = serializeMessage(msg);
+    webSocketPtr->broadcastTXT(json.c_str());
 }

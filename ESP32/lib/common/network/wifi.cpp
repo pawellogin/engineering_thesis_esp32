@@ -1,4 +1,4 @@
-#include "network.h"
+#include "wifi.h"
 
 bool connectToHotspot(const char *ssid, const char *password, unsigned long timeoutMs)
 {
@@ -11,11 +11,12 @@ bool connectToHotspot(const char *ssid, const char *password, unsigned long time
     while (WiFi.status() != WL_CONNECTED && millis() - start < timeoutMs)
     {
         delay(500);
-        LOG_DEBUG(".");
+        LOG_DEBUG_INLINE(".");
     }
 
     if (WiFi.status() == WL_CONNECTED)
     {
+        LOG_DEBUG("");
         LOG_DEBUG("[WiFi] Connected. IP: %s", WiFi.localIP().toString().c_str());
         return true;
     }
@@ -46,31 +47,13 @@ bool createAccessPoint(const char *ssid, const char *password, uint8_t channel, 
     return false;
 }
 
-void setupNetwork(WebSocketsServer *ws, std::function<void(uint8_t, WStype_t, uint8_t *, size_t)> wsEvent)
+bool setupNetwork()
 {
 #if NETWORK_MODE == 1
-    bool ok = connectToHotspot(sta_ssid, sta_password);
+    return connectToHotspot(sta_ssid, sta_password);
 #elif NETWORK_MODE == 2
-    bool ok = createAccessPoint(ap_ssid, ap_password, 1, max_clients);
+    return createAccessPoint(ap_ssid, ap_password, 1, max_clients);
 #endif
-
-    if (!ok)
-    {
-        LOG_DEBUG("Network setup failed, skipping WebSocket start.");
-        return;
-    }
-
-    if (ws == nullptr)
-    {
-        LOG_DEBUG("WebSocket pointer is null!");
-        return;
-    }
-
-    ws->begin();
-    ws->onEvent(wsEvent);
-    LOG_DEBUG("WebSocket server started on port %u", udp_port + 1);
-
-    setWebSocket(ws);
 }
 
 IPAddress getLocalIP()

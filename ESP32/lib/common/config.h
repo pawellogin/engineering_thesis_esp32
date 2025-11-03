@@ -13,6 +13,7 @@ extern const char *sta_password;
 // General configuration
 extern const int max_clients;
 extern unsigned int udp_port;
+extern unsigned int ws_port;
 
 //  Logging Configuration
 #define LOG_LEVEL_NONE 0

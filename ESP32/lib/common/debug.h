@@ -34,5 +34,5 @@
 
 // ---------- Optional external functions ----------
 void heartbeatDebug();
-void setWebSocket(WebSocketsServer *ws);
+void setDebugWebSocket(WebSocketsServer *ws);
 void broadcastDebug();
