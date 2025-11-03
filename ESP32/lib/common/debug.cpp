@@ -20,7 +20,7 @@ void broadcastDebug()
     if (!webSocketPtr)
         return; // safety check
 
-    StaticJsonDocument<256> doc;
+    JsonDocument doc;
     doc["heartbeat"] = millis();
 
     // Example client data

@@ -5,18 +5,16 @@
 #include "debug.h"
 #include "config.h"
 #include "utils.h"
+#include "network.h"
 
 // ---------------- Networking ----------------
 WiFiUDP udp;
-WebSocketsServer webSocket(udpPort + 1);
+WebSocketsServer webSocket(udp_port + 1);
 
 // ---------------- JSON ----------------
-StaticJsonDocument<256> doc;
+JsonDocument doc;
 
-// ---------------- Heartbeat ----------------
-unsigned long lastHeartbeat = 0;
-const unsigned long heartbeatInterval = 5000;
-
+// TODO move
 // // ---------------- Client Structure ----------------
 // struct Client
 // {
@@ -25,8 +23,9 @@ const unsigned long heartbeatInterval = 5000;
 //   String name;
 // };
 
-// Client clients[maxClients];
+// Client clients[max_clients];
 
+// TODO move
 // // ---------------- WebSocket Event ----------------
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
 {
@@ -51,6 +50,8 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
       return;
     }
 
+    String message = String((char *)payload).substring(0, length);
+    DEBUG_PRINTF("[%u] Received message: %s", num, message.c_str());
     // Example command: register client
     // if (doc.containsKey("function") && String(doc["function"]) == "ADDCLIENT")
     // {
@@ -71,20 +72,12 @@ void setup()
   delay(2000);
   DEBUG_PRINT("ESP32 Starting...");
 
-  // WiFi AP
-  WiFi.softAP(ssid, password, 1, 0, maxClients);
-  IPAddress IP = WiFi.softAPIP();
-  DEBUG_PRINTF("AP IP: %s", IP.toString().c_str());
+  // WIFI and websocket setup
+  setupNetwork(&webSocket, webSocketEvent);
 
   // // UDP
   // udp.begin(udpPort);
   // DEBUG_PRINTF("UDP listening on port %u", udpPort);
-
-  // WebSocket
-  webSocket.begin();
-  webSocket.onEvent(webSocketEvent);
-  DEBUG_PRINTF("WebSocket server started on port %u", udpPort + 1);
-  setWebSocket(&webSocket);
 }
 
 // // ---------------- Loop ----------------

@@ -1,4 +1,15 @@
-const char *ssid = "ESP32-Gateway";
-const char *password = "12345678";
-const int maxClients = 10;
-unsigned int udpPort = 8000;
+#pragma once
+
+#define DEBUG_ENABLED true
+#define NETWORK_MODE 1
+
+// Wi-Fi configuration (declarations only)
+extern const char *ap_ssid;
+extern const char *ap_password;
+
+extern const char *sta_ssid;
+extern const char *sta_password;
+
+// General configuration
+extern const int max_clients;
+extern unsigned int udp_port;

@@ -1,8 +1,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <WebSocketsServer.h>
-
-#define DEBUG_ENABLED true
+#include "config.h"
 
 #if DEBUG_ENABLED
 #define DEBUG_PRINT(x)     \
@@ -10,10 +9,11 @@
     {                      \
         Serial.println(x); \
     } while (0)
-#define DEBUG_PRINTF(fmt, ...)               \
-    do                                       \
-    {                                        \
-        Serial.printf((fmt), ##__VA_ARGS__); \
+
+#define DEBUG_PRINTF(fmt, ...)                  \
+    do                                          \
+    {                                           \
+        Serial.printf(fmt "\n", ##__VA_ARGS__); \
     } while (0)
 #else
 #define DEBUG_PRINT(x) \
