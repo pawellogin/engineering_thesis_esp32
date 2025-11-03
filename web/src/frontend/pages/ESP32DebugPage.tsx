@@ -7,7 +7,7 @@ export default function ESP32DebugPage() {
 
     const ws = useWebSocket();
     const [message, setMessage] = useState('');
-
+    const [wsIp, setWsIp] = useState('ws://192.168.137.86:8001');
     const sendMessage = () => {
         if (ws && message.trim() !== '') {
             ws.sendTextMessage(message);
@@ -18,21 +18,42 @@ export default function ESP32DebugPage() {
         <div css={containerCss}>
             <h1 css={titleCss}>ESP32 Debug Panel</h1>
 
-            <div className="rawInput">
-                <input
-                    css={inputCss}
-                    type="text"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Enter message"
-                />
-                <button css={buttonCss} onClick={sendMessage}>
-                    Send
-                </button>
-                <button css={buttonCss} onClick={sendMessage}>
-                    Clear
-                </button>
+            <div className="row">
+
+                <div className="col">
+                    <input
+                        css={inputCss}
+                        type="text"
+                        value={wsIp}
+                        onChange={(e) => setWsIp(e.target.value)}
+                        placeholder="IP"
+                    />
+                    <button css={buttonCss} onClick={() => ws?.connectWithNewUrl(wsIp)}>
+                        Connect
+                    </button>
+                    <button css={buttonCss} onClick={ws?.close}>
+                        Disconnect
+                    </button>
+
+                </div>
+
+                <div className="col">
+                    <input
+                        css={inputCss}
+                        type="text"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Enter message"
+                    />
+                    <button css={buttonCss} onClick={sendMessage}>
+                        Send
+                    </button>
+                    <button css={buttonCss} onClick={() => setMessage("")}>
+                        Clear
+                    </button>
+                </div>
             </div>
+
         </div>
     );
 };
@@ -45,10 +66,16 @@ const containerCss = css({
     color: "#eee",
     minHeight: "100vh",
 
-    "& .rawInput": {
+    "& .col": {
         display: "flex",
         gap: "8px",
     },
+
+    "& .row": {
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+    }
 });
 
 const titleCss = css({
