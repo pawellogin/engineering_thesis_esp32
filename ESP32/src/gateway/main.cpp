@@ -32,12 +32,12 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
   switch (type)
   {
   case WStype_DISCONNECTED:
-    DEBUG_PRINTF("[%u] Disconnected!", num);
+    LOG_DEBUG("[%u] Disconnected!", num);
     break;
   case WStype_CONNECTED:
   {
     IPAddress ip = webSocket.remoteIP(num);
-    DEBUG_PRINTF("[%u] Connected from %s", num, ip.toString().c_str());
+    LOG_DEBUG("[%u] Connected from %s", num, ip.toString().c_str());
   }
   break;
   case WStype_TEXT:
@@ -46,12 +46,12 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
     DeserializationError error = deserializeJson(doc, payload, length);
     if (error)
     {
-      DEBUG_PRINT("Failed to parse JSON");
+      LOG_DEBUG("Failed to parse JSON");
       return;
     }
 
     String message = String((char *)payload).substring(0, length);
-    DEBUG_PRINTF("[%u] Received message: %s", num, message.c_str());
+    LOG_DEBUG("[%u] Received message: %s", num, message.c_str());
     // Example command: register client
     // if (doc.containsKey("function") && String(doc["function"]) == "ADDCLIENT")
     // {
@@ -70,14 +70,14 @@ void setup()
 {
   Serial.begin(115200);
   delay(2000);
-  DEBUG_PRINT("ESP32 Starting...");
+  LOG_INFO("ESP32 Starting...");
 
   // WIFI and websocket setup
   setupNetwork(&webSocket, webSocketEvent);
 
   // // UDP
   // udp.begin(udpPort);
-  // DEBUG_PRINTF("UDP listening on port %u", udpPort);
+  // LOG_DEBUG("UDP listening on port %u", udpPort);
 }
 
 // // ---------------- Loop ----------------
@@ -100,6 +100,6 @@ void loop()
   //   int len = udp.read(packetBuffer, 255);
   //   if (len > 0)
   //     packetBuffer[len] = 0;
-  //   DEBUG_PRINTF("UDP Received: %s", packetBuffer);
+  //   LOG_DEBUG("UDP Received: %s", packetBuffer);
   // }
 }

@@ -5,23 +5,23 @@ bool connectToHotspot(const char *ssid, const char *password, unsigned long time
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
 
-    DEBUG_PRINTF("[WiFi] Connecting to hotspot: %s\n", ssid);
+    LOG_DEBUG("[WiFi] Connecting to hotspot: %s", ssid);
     unsigned long start = millis();
 
     while (WiFi.status() != WL_CONNECTED && millis() - start < timeoutMs)
     {
         delay(500);
-        DEBUG_PRINT(".");
+        LOG_DEBUG(".");
     }
 
     if (WiFi.status() == WL_CONNECTED)
     {
-        DEBUG_PRINTF("\n[WiFi] Connected. IP: %s\n", WiFi.localIP().toString().c_str());
+        LOG_DEBUG("[WiFi] Connected. IP: %s", WiFi.localIP().toString().c_str());
         return true;
     }
     else
     {
-        DEBUG_PRINTF("\n[WiFi] Connection failed.");
+        LOG_DEBUG("[WiFi] Connection failed.");
         WiFi.disconnect(true);
         return false;
     }
@@ -35,13 +35,13 @@ bool createAccessPoint(const char *ssid, const char *password, uint8_t channel, 
     if (result)
     {
         IPAddress ip = WiFi.softAPIP();
-        DEBUG_PRINTF("[WiFi] Access Point created: %s\n", ssid);
-        DEBUG_PRINTF("[WiFi] AP IP: %s\n", ip.toString().c_str());
+        LOG_DEBUG("[WiFi] Access Point created: %s", ssid);
+        LOG_DEBUG("[WiFi] AP IP: %s", ip.toString().c_str());
         return true;
     }
     else
     {
-        DEBUG_PRINTF("[WiFi] Failed to create Access Point.");
+        LOG_DEBUG("[WiFi] Failed to create Access Point.");
     }
     return false;
 }
@@ -56,19 +56,19 @@ void setupNetwork(WebSocketsServer *ws, std::function<void(uint8_t, WStype_t, ui
 
     if (!ok)
     {
-        DEBUG_PRINT("Network setup failed, skipping WebSocket start.");
+        LOG_DEBUG("Network setup failed, skipping WebSocket start.");
         return;
     }
 
     if (ws == nullptr)
     {
-        DEBUG_PRINT("WebSocket pointer is null!");
+        LOG_DEBUG("WebSocket pointer is null!");
         return;
     }
 
     ws->begin();
     ws->onEvent(wsEvent);
-    DEBUG_PRINTF("WebSocket server started on port %u", udp_port + 1);
+    LOG_DEBUG("WebSocket server started on port %u", udp_port + 1);
 
     setWebSocket(ws);
 }

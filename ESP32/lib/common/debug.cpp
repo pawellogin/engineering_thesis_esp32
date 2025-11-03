@@ -23,8 +23,6 @@ void broadcastDebug()
     JsonDocument doc;
     doc["heartbeat"] = millis();
 
-    // Example client data
-    // You may want to pass actual client info here
     doc["example"] = "debug message";
 
     char buffer[256];
