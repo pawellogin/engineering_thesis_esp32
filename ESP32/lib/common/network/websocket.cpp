@@ -1,6 +1,9 @@
 #include "debug.h"
 #include "websocket.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic error "-Wswitch-enum"
+
 static WebSocketsServer *webSocket = nullptr;
 static uint8_t adminClientId = 255;
 
@@ -14,7 +17,10 @@ static MessageType typeFromString(const String &typeStr)
     else if (typeStr == "status")
         return MessageType::STATUS;
     else
+    {
+        LOG_ERROR("Missing typeFromString conversion");
         return static_cast<MessageType>(-1); // Unknown
+    }
 }
 
 static String typeToString(MessageType type)
@@ -28,18 +34,27 @@ static String typeToString(MessageType type)
     case MessageType::STATUS:
         return "status";
     default:
+        LOG_ERROR("Missing typeToString conversion");
         return "unknown";
     }
 }
 
 static MessageAction actionFromString(const String &actionStr)
 {
+
     if (actionStr == "restart")
         return MessageAction::RESTART;
     else if (actionStr == "blink_led")
         return MessageAction::BLINK_LED;
+    else if (actionStr == "blink_gateway_led")
+        return MessageAction::BLINK_GATEWAY_LED;
+    else if (actionStr == "ping")
+        return MessageAction::PING;
     else
+    {
+        LOG_ERROR("Missing actionFromString conversion");
         return static_cast<MessageAction>(-1); // Unknown
+    }
 }
 
 static String actionToString(MessageAction action)
@@ -50,7 +65,12 @@ static String actionToString(MessageAction action)
         return "restart";
     case MessageAction::BLINK_LED:
         return "blink_led";
+    case MessageAction::BLINK_GATEWAY_LED:
+        return "blink_gateway_led";
+    case MessageAction::PING:
+        return "ping";
     default:
+        LOG_ERROR("Missing actionToString conversion");
         return "unknown";
     }
 }
@@ -72,10 +92,18 @@ bool deserializeMessage(const uint8_t *payload, size_t length, MessageDTO &msg)
     {
         msg.type = typeFromString(doc["type"].as<String>());
     }
+    else
+    {
+        LOG_INFO("Missing 'type' property in json");
+    }
 
     if (doc["action"].is<const char *>())
     {
         msg.action = actionFromString(doc["action"].as<String>());
+    }
+    else
+    {
+        LOG_INFO("Missing 'action' property in json");
     }
 
     if (!doc["data"].isNull())
@@ -86,6 +114,7 @@ bool deserializeMessage(const uint8_t *payload, size_t length, MessageDTO &msg)
     }
     else
     {
+        LOG_INFO("Missing 'data' property in json");
         msg.data = "";
     }
 
@@ -129,7 +158,12 @@ static void processCommand(const MessageDTO &msg)
         LOG_INFO("Blink LED command received");
         // TODO blinkLed();
         break;
-
+    case MessageAction::BLINK_GATEWAY_LED:
+        LOG_INFO("BLINK_GATEWAY_LED command received");
+        blinkLED();
+        break;
+    case MessageAction::PING:
+        break;
     default:
         LOG_ERROR("Unknown command action");
         break;
@@ -155,14 +189,28 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
         MessageDTO msg;
         if (deserializeMessage(payload, length, msg))
         {
-            if (msg.type == MessageType::COMMAND)
+            switch (msg.type)
+            {
+            case MessageType::COMMAND:
                 processCommand(msg);
-            else
+                break;
+
+            default:
                 LOG_DEBUG("Received non-command message: %s", actionToString(msg.action).c_str());
+                break;
+            }
         }
         break;
     }
 
+    case WStype_ERROR:
+    case WStype_BIN:
+    case WStype_FRAGMENT_TEXT_START:
+    case WStype_FRAGMENT_BIN_START:
+    case WStype_FRAGMENT:
+    case WStype_FRAGMENT_FIN:
+    case WStype_PING:
+    case WStype_PONG:
     default:
         break;
     }
@@ -194,3 +242,5 @@ void sendMessage(const MessageDTO &msg)
     String json = serializeMessage(msg);
     webSocket->sendTXT(adminClientId, json.c_str());
 }
+
+#pragma GCC diagnostic pop

@@ -4,7 +4,7 @@
 #include <WebSocketsServer.h>
 #include "config.h"
 
-// ---------- Logging Macros ----------
+// Logging Macros
 // ERROR
 #if LOG_LEVEL >= LOG_LEVEL_ERROR
 #define LOG_ERROR(fmt, ...) Serial.printf("[ERROR] " fmt "\n", ##__VA_ARGS__)
@@ -32,7 +32,12 @@
 #define LOG_DEBUG_INLINE(fmt, ...)
 #endif
 
-// ---------- Optional external functions ----------
+// Optional external functions
 void heartbeatDebug();
 void setDebugWebSocket(WebSocketsServer *ws);
 void broadcastDebug();
+
+// Debug LED
+void initDebugLED();
+void handleLED();
+void blinkLED(unsigned long durationMS = 200);

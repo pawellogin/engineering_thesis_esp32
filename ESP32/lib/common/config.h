@@ -3,6 +3,9 @@
 #define DEBUG_ENABLED true
 #define NETWORK_MODE 1
 
+// Led pins
+#define GATEWAY_LED 2
+
 // Wi-Fi configuration (declarations only)
 extern const char *ap_ssid;
 extern const char *ap_password;

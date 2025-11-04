@@ -77,8 +77,9 @@ void setup()
   if (setupNetwork())
   {
     setupWebSocket();
-    broadcastDebug();
   }
+
+  initDebugLED();
 
   // // UDP
   // udp.begin(udpPort);
@@ -89,13 +90,15 @@ void setup()
 void loop()
 {
   webSocketLoop();
+  handleLED();
 
   static unsigned long last = 0;
 
   if (millis() - last > 1000)
   {
     last = millis();
-    broadcastDebug();
+    // blinkLED();
+    // broadcastDebug();
   }
 
   // // Example: check UDP packets

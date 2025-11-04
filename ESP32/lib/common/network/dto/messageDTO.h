@@ -7,13 +7,15 @@ enum class MessageType
     COMMAND,
     STATUS,
     // EVENT,
-    ERROR
+    ERROR,
 };
 
 enum class MessageAction
 {
     RESTART,
     BLINK_LED,
+    BLINK_GATEWAY_LED,
+    PING
 };
 
 struct MessageDTO

@@ -31,3 +31,33 @@ void broadcastDebug()
     String json = serializeMessage(msg);
     webSocketPtr->broadcastTXT(json.c_str());
 }
+
+static bool ledState = false;
+static unsigned long previousMillis = 0;
+static unsigned long blinkDuration = 0;
+static bool blinking = false;
+
+void initDebugLED()
+{
+    pinMode(GATEWAY_LED, OUTPUT);
+    digitalWrite(GATEWAY_LED, LOW);
+}
+
+void blinkLED(unsigned long durationMs)
+{
+    blinkDuration = durationMs;
+    blinking = true;
+    previousMillis = millis();
+    ledState = true;
+    digitalWrite(GATEWAY_LED, HIGH);
+}
+
+void handleLED()
+{
+    if (blinking && millis() - previousMillis >= blinkDuration)
+    {
+        ledState = false;
+        blinking = false;
+        digitalWrite(GATEWAY_LED, LOW);
+    }
+}
