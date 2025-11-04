@@ -1,11 +1,13 @@
 
 import React, { useRef, useState } from 'react';
-import { localStorageNames } from '../utils/LocalStorageUtils';
+import { localStorageNames } from '../../utils/LocalStorageUtils';
 import { WebSocketContext } from './WebSocketContext';
 import WebSocketManager from './WebSocketManager';
 
 
-
+/**
+ * @deprecated 
+ */
 export const WebSocketProvider: React.FC<{ defaultUrl: string; children: React.ReactNode; }> = ({ defaultUrl: url, children }) => {
   // TODO [3]PEL this could be optimized 
   const [webSocket, setWebSocket] = useState<WebSocketManager | undefined>(undefined);

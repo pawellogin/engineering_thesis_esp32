@@ -1,10 +1,37 @@
-import { useContext } from "react";
-import { WebSocketContext, type WebSocketContextType } from "./WebSocketContext";
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import type { MessageDTO, MessageType } from './types/WsTypes';
+import { WebSocketContext } from './WebSocketContext';
 
-export const useWebSocket = (): WebSocketContextType => {
-    const context = useContext<WebSocketContextType>(WebSocketContext);
-    if (context === null) {
-        throw new Error("useWebSocket must be used within a WebSocketProvider");
-    }
-    return context;
-};
+
+export function useWebSocket() {
+    const { manager, status } = useContext(WebSocketContext);
+    const [lastMessage, setLastMessage] = useState<MessageDTO | null>(null);
+
+
+    useEffect(() => {
+        if (!manager) return () => { };
+
+        const unsub = manager.subscribe(null, (m) => setLastMessage(m));
+        return () => {
+            unsub();
+        };
+    }, [manager]);
+
+
+
+    const send = useCallback((msg: MessageDTO) => manager?.send(msg), [manager]);
+
+    const sendCommand = useCallback((action: string, data?: unknown) => manager?.sendCommand(action, data), [manager]);
+
+    const subscribe = useCallback((type: MessageType | null, handler: (m: MessageDTO) => void) => manager?.subscribe(type, handler), [manager]);
+
+
+    return useMemo(() => ({
+        send,
+        sendCommand,
+        subscribe,
+        status,
+        lastMessage,
+        manager,
+    }), [send, sendCommand, subscribe, status, lastMessage, manager]);
+}

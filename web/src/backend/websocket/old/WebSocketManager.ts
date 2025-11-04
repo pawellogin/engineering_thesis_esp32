@@ -1,12 +1,14 @@
-import type { HostRequest } from "../dto/HostRequest";
-import type { WsConnectionEnum } from "../enums/WsConnectionEnum";
-import { localStorageNames } from "../utils/LocalStorageUtils";
+import type { HostRequest } from "../../dto/HostRequest";
+import type { WsConnectionEnum } from "../../enums/WsConnectionEnum";
+import { localStorageNames } from "../../utils/LocalStorageUtils";
 
 
 type SubscriberCallback = (data: string) => void;
 type StatusCallback = (data: string) => void;
 
-
+/**
+ * @deprecated 
+ */
 class WebSocketManager {
     private socket: WebSocket | null = null;
     private subscribers: SubscriberCallback[] = [];

@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import { useState } from 'react';
-import { useWebSocket } from '../../backend/websocket/UseWebSocket';
+import { useWebSocket } from '../../backend/websocket/old/UseWebSocket';
 
 export default function ESP32DebugPage() {
 
