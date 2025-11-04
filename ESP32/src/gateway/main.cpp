@@ -26,46 +26,6 @@ JsonDocument doc;
 
 // Client clients[max_clients];
 
-// TODO move
-// // ---------------- WebSocket Event ----------------
-void webSocketEvent2(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
-{
-  switch (type)
-  {
-  case WStype_DISCONNECTED:
-    LOG_DEBUG("[%u] Disconnected!", num);
-    break;
-  case WStype_CONNECTED:
-  {
-    IPAddress ip = webSocket.remoteIP(num);
-    LOG_DEBUG("[%u] Connected from %s", num, ip.toString().c_str());
-  }
-  break;
-  case WStype_TEXT:
-  {
-    // Safely parse JSON
-    DeserializationError error = deserializeJson(doc, payload, length);
-    if (error)
-    {
-      LOG_DEBUG("Failed to parse JSON");
-      return;
-    }
-
-    String message = String((char *)payload).substring(0, length);
-    LOG_DEBUG("[%u] Received message: %s", num, message.c_str());
-    // Example command: register client
-    // if (doc.containsKey("function") && String(doc["function"]) == "ADDCLIENT")
-    // {
-    //   String name = doc["name"] | "unnamed";
-    //   addClient(webSocket.remoteIP(num), name);
-    // }
-
-    doc.clear();
-  }
-  break;
-  }
-}
-
 // ---------------- Setup ----------------
 void setup()
 {

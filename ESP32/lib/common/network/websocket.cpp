@@ -194,7 +194,8 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
             case MessageType::COMMAND:
                 processCommand(msg);
                 break;
-
+            case MessageType::STATUS:
+            case MessageType::ERROR:
             default:
                 LOG_DEBUG("Received non-command message: %s", actionToString(msg.action).c_str());
                 break;

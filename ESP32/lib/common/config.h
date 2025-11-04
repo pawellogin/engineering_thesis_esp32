@@ -1,7 +1,7 @@
 #pragma once
 
 #define DEBUG_ENABLED true
-#define NETWORK_MODE 1
+#define NETWORK_MODE 1 // 1=STA, 2=AP, AP == local wifi, STA == connects to hotspot
 
 // Led pins
 #define GATEWAY_LED 2
@@ -12,6 +12,8 @@ extern const char *ap_password;
 
 extern const char *sta_ssid;
 extern const char *sta_password;
+
+extern const char *mDNS_hostname;
 
 // General configuration
 extern const int max_clients;

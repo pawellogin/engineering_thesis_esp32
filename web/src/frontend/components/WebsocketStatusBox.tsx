@@ -18,24 +18,24 @@ export default function WebsocketStatusBox() {
 
     return (
         <Row gutter={[8, 8]} css={websocketStatusBoxCss}>
-            <Col>
+            <Col flex="none" >
                 <Badge
                     status={badgeStatus}
                     text={<Typography.Text>{status}</Typography.Text>}
                 />
             </Col>
-            <Col>
+            <Col flex="0 1 0px">
                 <AlertOutlined onClick={() => ws.sendCommand("blink_gateway_led")} />
             </Col>
-        </Row>
+        </Row >
     );
 };
-
 
 const websocketStatusBoxCss = css({
     display: "flex",
     justifyContent: "center",
     padding: "12px",
-    height: "100%",
+    maxHeight: "46px",
     width: "100%",
+    flexWrap: "nowrap"
 });

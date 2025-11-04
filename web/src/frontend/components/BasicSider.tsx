@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { ESP32DebugPageRoute } from "../../backend/routes";
 import WebsocketStatusBox from "./WebsocketStatusBox";
 
-const { Header, Content, Footer, Sider } = Layout;
+const { Content, Sider } = Layout;
 
 type BasicSiderProps = { children: ReactNode; };
 
@@ -57,7 +57,7 @@ export default function BasicSider(props: BasicSiderProps) {
                 <div>
                     <WebsocketStatusBox />
                 </div>
-                <Menu className="menu" defaultSelectedKeys={["1"]} mode="inline" items={menuItems} />
+                <Menu className="menu" mode="inline" items={menuItems} />
             </Sider>
             <Layout>
                 {/* <Header style={{ padding: 0, background: colorBgContainer }} /> */}

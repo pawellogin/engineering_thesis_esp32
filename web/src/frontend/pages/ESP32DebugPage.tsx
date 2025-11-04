@@ -25,7 +25,7 @@ export default function ESP32DebugPage() {
             type: 'status',
             action: 'ping',
             data: 'test',
-            url: 'ws://192.168.137.102:8001',
+            url: 'ws://esp-gateway.local:8001',
         });
     }, [form]);
 
@@ -33,7 +33,7 @@ export default function ESP32DebugPage() {
         if (ws) {
             const formData = form.getFieldsValue(true);
             ws.send({
-                type: formData.type as any,
+                type: formData.type,
                 action: formData.action,
                 data: formData.data,
                 timestamp: 0,

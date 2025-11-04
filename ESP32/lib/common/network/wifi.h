@@ -2,6 +2,7 @@
 #include <WiFi.h>
 #include <WebSocketsServer.h>
 #include "debug.h"
+#include <ESPmDNS.h>
 
 bool setupNetwork();
 

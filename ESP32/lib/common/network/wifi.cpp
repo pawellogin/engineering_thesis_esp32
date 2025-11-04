@@ -5,7 +5,7 @@ bool connectToHotspot(const char *ssid, const char *password, unsigned long time
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
 
-    LOG_DEBUG("[WiFi] Connecting to hotspot: %s", ssid);
+    LOG_DEBUG("Connecting to hotspot: %s", ssid);
     unsigned long start = millis();
 
     while (WiFi.status() != WL_CONNECTED && millis() - start < timeoutMs)
@@ -16,13 +16,22 @@ bool connectToHotspot(const char *ssid, const char *password, unsigned long time
 
     if (WiFi.status() == WL_CONNECTED)
     {
-        LOG_DEBUG("");
-        LOG_DEBUG("[WiFi] Connected. IP: %s", WiFi.localIP().toString().c_str());
+        LOG_DEBUG("Connected. IP: %s", WiFi.localIP().toString().c_str());
+
+        if (MDNS.begin(mDNS_hostname))
+        {
+            LOG_DEBUG("mDNS started: %s.local", mDNS_hostname);
+        }
+        else
+        {
+            LOG_DEBUG("mDNS failed to start");
+        }
+
         return true;
     }
     else
     {
-        LOG_DEBUG("[WiFi] Connection failed.");
+        LOG_DEBUG("Connection failed.");
         WiFi.disconnect(true);
         return false;
     }
@@ -36,15 +45,25 @@ bool createAccessPoint(const char *ssid, const char *password, uint8_t channel, 
     if (result)
     {
         IPAddress ip = WiFi.softAPIP();
-        LOG_DEBUG("[WiFi] Access Point created: %s", ssid);
-        LOG_DEBUG("[WiFi] AP IP: %s", ip.toString().c_str());
+        LOG_DEBUG("Access Point created: %s", ssid);
+        LOG_DEBUG("AP IP: %s", ip.toString().c_str());
+
+        if (MDNS.begin(mDNS_hostname))
+        {
+            LOG_DEBUG("mDNS started for AP mode: mDNS_hostname.local");
+        }
+        else
+        {
+            LOG_DEBUG("mDNS failed to start in AP mode");
+        }
+
         return true;
     }
     else
     {
-        LOG_DEBUG("[WiFi] Failed to create Access Point.");
+        LOG_DEBUG("Failed to create Access Point.");
+        return false;
     }
-    return false;
 }
 
 bool setupNetwork()
