@@ -1,7 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import { ConfigPanelRoute, ESP32DebugPageRoute } from "./backend/routes";
-// import { WebSocketProvider } from "./backend/websocket/old/WebSocketProvider";
-import { useWebSocket } from "./backend/websocket/UseWebSocket";
+import { useWebSocket } from "./backend/websocket/useWebSocket";
 import { WebSocketProvider } from "./frontend/components/WebSocketProvider";
 import { ConfigPanel } from "./frontend/pages/ConfigPanel";
 import ESP32DebugPage from "./frontend/pages/ESP32DebugPage";
@@ -17,7 +16,7 @@ function App() {
       <div>
         <div>Status: {status}</div>
         <div>Last message: {lastMessage ? JSON.stringify(lastMessage) : '—'}</div>
-        <button onClick={() => sendCommand('blink_led', { times: 3 })}>Blink LED</button>
+        <button onClick={() => sendCommand("blink_gateway_led", { times: 3 })}>Blink LED</button>
       </div>
     );
   };

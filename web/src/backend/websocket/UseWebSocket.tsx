@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import type { MessageDTO, MessageType } from './types/WsTypes';
+import type { MessageAction, MessageDTO, MessageType } from './types/WsTypes';
 import { WebSocketContext } from './WebSocketContext';
 
 
@@ -21,7 +21,7 @@ export function useWebSocket() {
 
     const send = useCallback((msg: MessageDTO) => manager?.send(msg), [manager]);
 
-    const sendCommand = useCallback((action: string, data?: unknown) => manager?.sendCommand(action, data), [manager]);
+    const sendCommand = useCallback((action: MessageAction, data?: unknown) => manager?.sendCommand(action, data), [manager]);
 
     const subscribe = useCallback((type: MessageType | null, handler: (m: MessageDTO) => void) => manager?.subscribe(type, handler), [manager]);
 

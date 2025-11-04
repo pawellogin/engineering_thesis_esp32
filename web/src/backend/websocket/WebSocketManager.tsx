@@ -1,4 +1,4 @@
-import type { MessageDTO, MessageType, WSStatus } from "./types/WsTypes";
+import type { MessageAction, MessageDTO, MessageType, WSStatus } from "./types/WsTypes";
 
 
 type Handler = (msg: MessageDTO) => void;
@@ -36,7 +36,6 @@ export class WebSocketManager {
 
 
     connect() {
-        debugger;
         if (!this.url) return;
         if (this.socket && (this.status === 'connecting' || this.status === 'open')) return;
 
@@ -69,7 +68,7 @@ export class WebSocketManager {
     }
 
 
-    sendCommand(action: string, data: any = {}) {
+    sendCommand(action: MessageAction, data: any = {}) {
         this.send({ type: 'command', action, data, timestamp: Date.now() });
     }
 
