@@ -1,39 +1,44 @@
+/** @jsxImportSource @emotion/react */
+
+import { css, Global } from "@emotion/react";
+import { ConfigProvider, theme } from "antd";
 import { Route, Routes } from "react-router-dom";
-import { ConfigPanelRoute, ESP32DebugPageRoute } from "./backend/routes";
-import { useWebSocket } from "./backend/websocket/useWebSocket";
+import { ESP32DebugPageRoute } from "./backend/routes";
+import BasicSider from "./frontend/components/BasicSider";
 import { WebSocketProvider } from "./frontend/components/WebSocketProvider";
-import { ConfigPanel } from "./frontend/pages/ConfigPanel";
 import ESP32DebugPage from "./frontend/pages/ESP32DebugPage";
 import Welcome from "./frontend/pages/WelcomePage";
 
 
 function App() {
-
-  // TODO move s
-  const StatusBox: React.FC = () => {
-    const { status, lastMessage, sendCommand } = useWebSocket();
-    return (
-      <div>
-        <div>Status: {status}</div>
-        <div>Last message: {lastMessage ? JSON.stringify(lastMessage) : '—'}</div>
-        <button onClick={() => sendCommand("blink_gateway_led", { times: 3 })}>Blink LED</button>
-      </div>
-    );
-  };
-
   return (
-    <div >
-      <WebSocketProvider>
-        {/* <BaseHeader /> */}
-        <StatusBox />
-        <Routes>
-          <Route path="/" element={<Welcome />} />
-          <Route path={ESP32DebugPageRoute} element={<ESP32DebugPage />} />
-          <Route path={ConfigPanelRoute} element={<ConfigPanel />} />
-        </Routes>
-      </WebSocketProvider>
-    </div>
+    <>
+      <ConfigProvider
+        theme={{
+          algorithm: theme.darkAlgorithm,
+        }}
+      >
+        <WebSocketProvider>
+          <Global styles={globalCss} />
+          <BasicSider>
+            {/* <StatusBox /> */}
+            <Routes>
+              <Route path="/" element={<Welcome />} />
+              <Route path={ESP32DebugPageRoute} element={<ESP32DebugPage />} />
+            </Routes>
+          </BasicSider>
+        </WebSocketProvider>
+      </ConfigProvider>
+
+    </>
   );
 }
 
 export default App;
+
+const globalCss = css({
+  body: {
+    margin: 0,
+  },
+});
+

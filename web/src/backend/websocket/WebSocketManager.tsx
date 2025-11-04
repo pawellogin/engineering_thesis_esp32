@@ -72,6 +72,10 @@ export class WebSocketManager {
         this.send({ type: 'command', action, data, timestamp: Date.now() });
     }
 
+    sendStatus(action: MessageAction, data: any = {}) {
+        this.send({ type: "status", action, data, timestamp: Date.now() });
+    }
+
 
     subscribe(type: MessageType | null, handler: Handler) {
         if (!type) {
@@ -95,7 +99,7 @@ export class WebSocketManager {
         this.status = 'open';
         this.reconnectAttempts = 0;
         while (this.messageQueue.length) this.send(this.messageQueue.shift()!);
-        this.startHeartbeat();
+        // this.startHeartbeat();
     };
 
 

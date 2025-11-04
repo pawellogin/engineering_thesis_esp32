@@ -20,8 +20,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode; }> = ({ ch
                 console.warn("Invalid config in storage");
             }
         } else {
-            // For now, hardcode your dev IP here
-            setConfigState({ url: "ws://192.168.137.102:8001" });
+            // setConfigState({ url: "ws://192.168.137.102:8001" });
+            console.log("missing ws url");
         }
     }, []);
 
