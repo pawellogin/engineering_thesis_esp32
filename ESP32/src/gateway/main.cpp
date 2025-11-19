@@ -4,7 +4,6 @@
 #include <ArduinoJson.h>
 #include "debug.h"
 #include "config.h"
-#include "utils.h"
 #include "network/wifi.h"
 #include "network/websocket.h"
 #include "network/UDP/gatewayUdp.h"

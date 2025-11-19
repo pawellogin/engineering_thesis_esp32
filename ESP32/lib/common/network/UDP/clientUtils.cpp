@@ -1,8 +1,9 @@
-#include "gatewayUtils.h"
+#include "clientUtils.h"
+#include "network/dto/udpMessageDTO.h"
+#include "network/UDP/clientUdp.h"
 
-void blinkClientLed()
+void pingGateway()
 {
-    LOG_INFO("Blink LED command received");
     UdpMessageDTO msg;
 
     msg.action = UdpMessageAction::BLINK_BUILTIN_LED;
@@ -11,6 +12,5 @@ void blinkClientLed()
     msg.timestamp = millis();
 
     String serializedMsg = serializeUdpMessage(msg);
-
-    gatewayUdpSendAll(serializedMsg.c_str());
+    clientUdpSend(serializedMsg.c_str());
 }

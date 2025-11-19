@@ -12,6 +12,6 @@ const unsigned int wifi_timeout = 100000;
 const char *mDNS_hostname = "esp-gateway";
 
 // General configuration
-const int max_clients = 10;
-unsigned int udp_port = 8000;
-unsigned int ws_port = udp_port + 1;
+// constexpr int max_clients = 10;
+// unsigned int udp_port = 8000;
+// unsigned int ws_port = udp_port + 1;

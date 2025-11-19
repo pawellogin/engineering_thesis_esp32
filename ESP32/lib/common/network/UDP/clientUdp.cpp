@@ -21,7 +21,9 @@ void clientUdpInit()
     }
 }
 
-// Function to send message to gateway
+/*
+Function to send message to gateway
+*/
 void clientUdpSend(const char *msg)
 {
     if (gatewayKnown)
@@ -37,7 +39,7 @@ void clientUdpSend(const char *msg)
     }
 }
 
-static void processUdpCommand(const UdpMessageDTO &msg)
+static void processGatewayCommand(const UdpMessageDTO &msg)
 {
     switch (msg.action)
     {
@@ -46,7 +48,7 @@ static void processUdpCommand(const UdpMessageDTO &msg)
         break;
     case UdpMessageAction::PING:
         // TODO
-        // clientUdpSend(R"({"type":"status","action":"pong"})");
+        clientUdpSend("PONG");
         break;
     default:
         LOG_ERROR("Unknown UDP command");
@@ -73,7 +75,7 @@ void clientUdpLoop()
         switch (msg.type)
         {
         case UdpMessageType::COMMAND:
-            processUdpCommand(msg);
+            processGatewayCommand(msg);
             break;
 
         case UdpMessageType::STATUS:

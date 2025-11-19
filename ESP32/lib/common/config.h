@@ -16,10 +16,12 @@ extern const unsigned int wifi_timeout;
 
 extern const char *mDNS_hostname;
 
-// General configuration
-extern const int max_clients;
-extern unsigned int udp_port;
-extern unsigned int ws_port;
+// UDP configuration
+constexpr int max_clients = 10;
+constexpr unsigned int udp_port = 8000;
+constexpr unsigned int ws_port = udp_port + 1;
+
+constexpr unsigned int gateway_clients_ping_check_timeout = 5000;
 
 //  Logging Configuration
 #define LOG_LEVEL_NONE 0

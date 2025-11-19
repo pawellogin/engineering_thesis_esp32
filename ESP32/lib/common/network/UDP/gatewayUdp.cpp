@@ -4,6 +4,7 @@
 #include "gatewayUdp.h"
 #include "debug.h"
 #include "network/dto/udpMessageDTO.h"
+#include "network/objects/client.h"
 
 WiFiUDP udp;
 
@@ -22,7 +23,7 @@ void gatewayUdpInit()
     }
 }
 
-void handleClientCommand(const UdpMessageDTO &msg, IPAddress clientIP)
+void proccessClientCommand(const UdpMessageDTO &msg, IPAddress clientIP)
 {
     switch (msg.action)
     {
@@ -44,20 +45,73 @@ void gatewayUdpLoop()
         if (len > 0)
             incomingPacket[len] = '\0';
 
-        clientIP = udp.remoteIP(); // remember who sent it
-        LOG_INFO("UDP Received from %s: %s\n", clientIP.toString().c_str(), incomingPacket);
+        IPAddress ip = udp.remoteIP();
 
-        // TODO receive data from clients and handle it
+        // register client automatically
+        registerClient(ip);
+
+        LOG_INFO("UDP Received from %s: %s\n", ip.toString().c_str(), incomingPacket);
+
+        // parse JSON message
+        UdpMessageDTO msg;
+        if (deserializeUdpMessage((uint8_t *)incomingPacket, len, msg)) // implement this using ArduinoJson
+        {
+            switch (msg.type)
+            {
+            case UdpMessageType::COMMAND:
+                proccessClientCommand(msg, ip);
+                break;
+            case UdpMessageType::STATUS:
+            case UdpMessageType::ERROR:
+            default:
+                break;
+            }
+        }
     }
 }
 
-void gatewayUdpSend(const char *msg)
+void gatewayUdpSend(IPAddress ip, const char *msg)
 {
-    if (clientIP)
+    udp.beginPacket(ip, udp_port);
+    udp.print(msg);
+    udp.endPacket();
+    LOG_INFO("UDP Sent to %s: %s\n", ip.toString().c_str(), msg);
+}
+
+void gatewayUdpSendAll(const char *msg)
+{
+    for (size_t i = 0; i < max_clients; ++i)
     {
-        udp.beginPacket(clientIP, udp_port);
-        udp.print(msg);
-        udp.endPacket();
-        LOG_INFO("UDP Sent to %s: %s\n", clientIP.toString().c_str(), msg);
+        if (clients[i].connected)
+        {
+            gatewayUdpSend(clients[i].ip, msg);
+        }
+    }
+}
+
+void gatewayPingClients()
+{
+    unsigned long now = millis();
+    for (size_t i = 0; i < max_clients; ++i)
+    {
+        if (clients[i].connected)
+        {
+            if (now - clients[i].lastSeen > gateway_clients_ping_check_timeout)
+            {
+                LOG_INFO("Client timed out: %s\n", clients[i].ip.toString().c_str());
+                clients[i].connected = false;
+                continue;
+            }
+            UdpMessageDTO msg;
+
+            msg.action = UdpMessageAction::PING;
+            msg.type = UdpMessageType::COMMAND;
+            msg.data = "PING";
+            msg.timestamp = millis();
+
+            String serializedMsg = serializeUdpMessage(msg);
+
+            gatewayUdpSend(clients[i].ip, serializedMsg.c_str());
+        }
     }
 }
