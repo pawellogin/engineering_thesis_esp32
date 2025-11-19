@@ -1,5 +1,5 @@
 #include "debug.h"
-#include "network/dto/messageDTO.h"
+#include "network/dto/webMessageDTO.h"
 #include "network/websocket.h"
 
 void heartbeatDebug()
@@ -22,13 +22,13 @@ void broadcastDebug()
     if (!webSocketPtr)
         return; // safety check
 
-    MessageDTO msg;
-    msg.type = MessageType::STATUS;
-    msg.action = MessageAction::BLINK_LED;
+    WebMessageDTO msg;
+    msg.type = WebMessageType::STATUS;
+    msg.action = WebMessageAction::BLINK_CLIENTS_LED;
     msg.data = "test debug message";
     msg.timestamp = millis();
 
-    String json = serializeMessage(msg);
+    String json = serializeWebMessage(msg);
     webSocketPtr->broadcastTXT(json.c_str());
 }
 
@@ -39,8 +39,8 @@ static bool blinking = false;
 
 void initDebugLED()
 {
-    pinMode(GATEWAY_LED, OUTPUT);
-    digitalWrite(GATEWAY_LED, LOW);
+    pinMode(BUILTIN_LED, OUTPUT);
+    digitalWrite(BUILTIN_LED, LOW);
 }
 
 void blinkLED(unsigned long durationMs)
@@ -49,7 +49,7 @@ void blinkLED(unsigned long durationMs)
     blinking = true;
     previousMillis = millis();
     ledState = true;
-    digitalWrite(GATEWAY_LED, HIGH);
+    digitalWrite(BUILTIN_LED, HIGH);
 }
 
 void handleLED()
@@ -58,6 +58,6 @@ void handleLED()
     {
         ledState = false;
         blinking = false;
-        digitalWrite(GATEWAY_LED, LOW);
+        digitalWrite(BUILTIN_LED, LOW);
     }
 }

@@ -16,7 +16,7 @@ bool connectToHotspot(const char *ssid, const char *password, unsigned long time
 
     if (WiFi.status() == WL_CONNECTED)
     {
-        LOG_DEBUG("Connected. IP: %s", WiFi.localIP().toString().c_str());
+        LOG_DEBUG("\nConnected. IP: %s", WiFi.localIP().toString().c_str());
 
         if (MDNS.begin(mDNS_hostname))
         {

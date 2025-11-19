@@ -4,7 +4,7 @@
 #define NETWORK_MODE 1 // 1=STA, 2=AP, AP == local wifi, STA == connects to hotspot
 
 // Led pins
-#define GATEWAY_LED 2
+#define BUILTIN_LED 2
 
 // Wi-Fi configuration (declarations only)
 extern const char *ap_ssid;
@@ -12,6 +12,7 @@ extern const char *ap_password;
 
 extern const char *sta_ssid;
 extern const char *sta_password;
+extern const unsigned int wifi_timeout;
 
 extern const char *mDNS_hostname;
 

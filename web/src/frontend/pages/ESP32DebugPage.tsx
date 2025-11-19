@@ -49,6 +49,10 @@ export default function ESP32DebugPage() {
         manager.connect();
     }, [form, manager, setConfig]);
 
+    const blinkClientsLED = useCallback(() => {
+        ws.sendCommand("blink_clients_led");
+    }, [ws]);
+
     return (
         <div css={pageWrapperCss}>
             <Form form={form} layout="vertical" css={formCss}>
@@ -73,6 +77,7 @@ export default function ESP32DebugPage() {
 
                 <div css={buttonRowCss}>
                     <Button onClick={() => ws.sendCommand("blink_gateway_led")}>Blink gateway LED</Button>
+                    <Button onClick={blinkClientsLED}>Blink clients LED</Button>
                     <Button onClick={connect}>Connect</Button>
                     <Button onClick={sendMessage} type="primary">
                         Send

@@ -7,26 +7,11 @@
 #include "utils.h"
 #include "network/wifi.h"
 #include "network/websocket.h"
+#include "network/UDP/gatewayUdp.h"
+#include "network/dto/udpMessageDTO.h"
 
-// ---------------- Networking ----------------
-WiFiUDP udp;
-WebSocketsServer webSocket(udp_port + 1);
-
-// ---------------- JSON ----------------
 JsonDocument doc;
 
-// TODO move
-// // ---------------- Client Structure ----------------
-// struct Client
-// {
-//   IPAddress ip;
-//   bool online;
-//   String name;
-// };
-
-// Client clients[max_clients];
-
-// ---------------- Setup ----------------
 void setup()
 {
   Serial.begin(115200);
@@ -37,38 +22,25 @@ void setup()
   if (setupNetwork())
   {
     setupWebSocket();
+    gatewayUdpInit();
   }
 
   initDebugLED();
-
-  // // UDP
-  // udp.begin(udpPort);
-  // LOG_DEBUG("UDP listening on port %u", udpPort);
 }
 
-// // ---------------- Loop ----------------
 void loop()
 {
   webSocketLoop();
   handleLED();
+  gatewayUdpLoop();
 
   static unsigned long last = 0;
 
-  if (millis() - last > 1000)
+  if (millis() - last > 2000)
   {
+
     last = millis();
     // blinkLED();
     // broadcastDebug();
   }
-
-  // // Example: check UDP packets
-  // int packetSize = udp.parsePacket();
-  // if (packetSize)
-  // {
-  //   char packetBuffer[255];
-  //   int len = udp.read(packetBuffer, 255);
-  //   if (len > 0)
-  //     packetBuffer[len] = 0;
-  //   LOG_DEBUG("UDP Received: %s", packetBuffer);
-  // }
 }
