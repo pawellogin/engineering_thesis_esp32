@@ -24,13 +24,13 @@ void setup()
     gatewayUdpInit();
   }
 
-  initDebugLED();
+  initBuiltInLED();
 }
 
 void loop()
 {
   webSocketLoop();
-  handleLED();
+  handleBuiltInLED();
   gatewayUdpLoop();
 
   static unsigned long last = 0;
@@ -39,7 +39,7 @@ void loop()
   {
 
     last = millis();
-    // blinkLED();
+    // blinkBuiltInLED();
     // broadcastDebug();
   }
 }

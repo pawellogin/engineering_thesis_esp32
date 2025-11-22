@@ -10,26 +10,22 @@
 static WebSocketsServer *webSocket = nullptr;
 static uint8_t adminClientId = 255;
 
-#pragma region utils
-
-#pragma endregion
-
-static void processCommand(const WebMessageDTO &msg)
+static void processWebsocketCommand(const WebMessageDTO &msg)
 {
     switch (msg.action)
     {
     case WebMessageAction::RESTART:
-        LOG_INFO("Restart requested");
+        restartESP();
         // TODO restartSystem();
         break;
 
     case WebMessageAction::BLINK_CLIENTS_LED:
         LOG_INFO("BLINK_CLIENTS_LED command received");
-        blinkClientLed();
+        gatewayUtilsBlinkClientsLed();
         break;
     case WebMessageAction::BLINK_GATEWAY_LED:
         LOG_INFO("BLINK_GATEWAY_LED command received");
-        blinkLED();
+        blinkBuiltInLED();
         break;
     case WebMessageAction::PING:
         break;
@@ -61,7 +57,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
             switch (msg.type)
             {
             case WebMessageType::COMMAND:
-                processCommand(msg);
+                processWebsocketCommand(msg);
                 break;
             case WebMessageType::STATUS:
             case WebMessageType::ERROR:

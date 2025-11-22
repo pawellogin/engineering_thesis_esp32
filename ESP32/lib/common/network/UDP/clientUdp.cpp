@@ -1,8 +1,7 @@
-#include <WiFi.h>
-#include <WiFiUdp.h>
-#include "config.h"
-#include "debug.h"
-#include "network/dto/udpMessageDTO.h"
+#include "network/UDP/clientUdp.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic error "-Wswitch-enum"
 
 WiFiUDP udp;
 char incomingPacket[255];
@@ -43,8 +42,15 @@ static void processGatewayCommand(const UdpMessageDTO &msg)
 {
     switch (msg.action)
     {
+    case UdpMessageAction::RESTART:
+        restartESP();
+        break;
     case UdpMessageAction::BLINK_BUILTIN_LED:
-        blinkLED(200);
+        blinkBuiltInLED();
+        break;
+    case UdpMessageAction::REGISTRATION_ACK:
+        // TODO add blinking the main led and led strip here, also make led strip correct color depending on the number
+        clientUtilsRegistrationAck();
         break;
     case UdpMessageAction::PING:
         // TODO
@@ -86,14 +92,13 @@ void clientUdpLoop()
     }
 }
 
-// Example: client sends “PING” every 2 seconds
-void clientUdpTestPing()
+void clientUdpDiscoverPing(unsigned int interval)
 {
-    static unsigned long lastSend = 0;
+    static unsigned int lastSend = 0;
 
     if (millis() - lastSend > 10000)
     {
-        clientUdpSend("PING");
+        clientUtilsPingGateway();
         lastSend = millis();
     }
 }
@@ -103,3 +108,5 @@ void setGatewayIP(IPAddress ip)
     gatewayIP = ip;
     gatewayKnown = true;
 }
+
+#pragma GCC diagnostic pop

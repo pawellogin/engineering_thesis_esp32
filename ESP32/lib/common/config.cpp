@@ -7,7 +7,7 @@ const char *ap_password = "12345678";
 const char *sta_ssid = "LENOVO20_4046";
 const char *sta_password = "12341234";
 
-const unsigned int wifi_timeout = 100000;
+const unsigned int wifi_timeout = 1000 * 3600;
 
 const char *mDNS_hostname = "esp-gateway";
 

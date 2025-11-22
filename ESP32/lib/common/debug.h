@@ -3,6 +3,7 @@
 #include <ArduinoJson.h>
 #include <WebSocketsServer.h>
 #include "config.h"
+#include "esp_system.h"
 
 // Logging Macros
 // ERROR
@@ -37,7 +38,10 @@ void heartbeatDebug();
 void setDebugWebSocket(WebSocketsServer *ws);
 void broadcastDebug();
 
+// TODO move to LED utils file
 // Debug LED
-void initDebugLED();
-void handleLED();
-void blinkLED(unsigned long durationMS = 200);
+void initBuiltInLED();
+void handleBuiltInLED();
+void blinkBuiltInLED(unsigned long durationMS = 200);
+
+void restartESP();

@@ -1,10 +1,7 @@
-#include <WiFi.h>
-#include <WiFiUdp.h>
-#include "config.h"
 #include "gatewayUdp.h"
-#include "debug.h"
-#include "network/dto/udpMessageDTO.h"
-#include "network/objects/client.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic error "-Wswitch-enum"
 
 WiFiUDP udp;
 
@@ -25,12 +22,13 @@ void gatewayUdpInit()
 
 void proccessClientCommand(const UdpMessageDTO &msg, IPAddress clientIP)
 {
+    // gateway will not get most if any of those commands
     switch (msg.action)
     {
     case UdpMessageAction::PING:
-        // gatewayUdpSend(clientIP, R"({"type":"status","action":"pong"})");
-        break;
-
+    case UdpMessageAction::BLINK_BUILTIN_LED:
+    case UdpMessageAction::REGISTRATION_ACK:
+    case UdpMessageAction::RESTART:
     default:
         break;
     }
@@ -47,12 +45,15 @@ void gatewayUdpLoop()
 
         IPAddress ip = udp.remoteIP();
 
-        // register client automatically
-        registerClient(ip);
+        ClientRegisterResult registerResult = registerClient(ip);
+
+        if (registerResult == ClientRegisterResult::NEW_REGISTERED)
+        {
+            gatewayUtilsRegistrationAck(ip);
+        }
 
         LOG_INFO("UDP Received from %s: %s\n", ip.toString().c_str(), incomingPacket);
 
-        // parse JSON message
         UdpMessageDTO msg;
         if (deserializeUdpMessage((uint8_t *)incomingPacket, len, msg)) // implement this using ArduinoJson
         {
@@ -89,29 +90,32 @@ void gatewayUdpSendAll(const char *msg)
     }
 }
 
-void gatewayPingClients()
-{
-    unsigned long now = millis();
-    for (size_t i = 0; i < max_clients; ++i)
-    {
-        if (clients[i].connected)
-        {
-            if (now - clients[i].lastSeen > gateway_clients_ping_check_timeout)
-            {
-                LOG_INFO("Client timed out: %s\n", clients[i].ip.toString().c_str());
-                clients[i].connected = false;
-                continue;
-            }
-            UdpMessageDTO msg;
+// TODO remove
+// void gatewayPingClients()
+// {
+//     unsigned long now = millis();
+//     for (size_t i = 0; i < max_clients; ++i)
+//     {
+//         if (clients[i].connected)
+//         {
+//             if (now - clients[i].lastSeen > gateway_clients_ping_check_timeout)
+//             {
+//                 LOG_INFO("Client timed out: %s\n", clients[i].ip.toString().c_str());
+//                 clients[i].connected = false;
+//                 continue;
+//             }
+//             UdpMessageDTO msg;
 
-            msg.action = UdpMessageAction::PING;
-            msg.type = UdpMessageType::COMMAND;
-            msg.data = "PING";
-            msg.timestamp = millis();
+//             msg.action = UdpMessageAction::PING;
+//             msg.type = UdpMessageType::COMMAND;
+//             msg.data = "PING";
+//             msg.timestamp = millis();
 
-            String serializedMsg = serializeUdpMessage(msg);
+//             String serializedMsg = serializeUdpMessage(msg);
 
-            gatewayUdpSend(clients[i].ip, serializedMsg.c_str());
-        }
-    }
-}
+//             gatewayUdpSend(clients[i].ip, serializedMsg.c_str());
+//         }
+//     }
+// }
+
+#pragma GCC diagnostic pop

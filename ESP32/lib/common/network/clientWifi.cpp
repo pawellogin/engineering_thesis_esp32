@@ -46,12 +46,12 @@ IPAddress discoverGatewayIP(const char *hostname, unsigned long timeoutMs)
 
     if (gatewayIP.toString() != "0.0.0.0")
     {
-        LOG_INFO("[mDNS] Gateway found: %s -> %s",
+        LOG_INFO("Gateway found: %s -> %s",
                  hostname, gatewayIP.toString().c_str());
     }
     else
     {
-        LOG_ERROR("[mDNS] Failed to resolve gateway: %s.local", hostname);
+        LOG_ERROR("Failed to resolve gateway: %s.local", hostname);
     }
 
     return gatewayIP;

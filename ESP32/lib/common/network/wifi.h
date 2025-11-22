@@ -6,7 +6,7 @@
 
 bool setupNetwork();
 
-bool connectToHotspot(const char *ssid, const char *password, unsigned long timeoutMs = 10000);
+bool connectToHotspot(const char *ssid, const char *password, unsigned long timeoutMs = wifi_timeout);
 
 bool createAccessPoint(const char *ssid, const char *password, uint8_t channel = 1, uint8_t maxConn = 4);
 

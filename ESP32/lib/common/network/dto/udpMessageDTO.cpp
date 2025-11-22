@@ -1,5 +1,8 @@
 #include "udpMessageDTO.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic error "-Wswitch-enum"
+
 static UdpMessageType typeFromString(const String &typeStr)
 {
     if (typeStr == "command")
@@ -21,6 +24,8 @@ static UdpMessageAction actionFromString(const String &actionStr)
         return UdpMessageAction::RESTART;
     else if (actionStr == "blink_builtin_led")
         return UdpMessageAction::BLINK_BUILTIN_LED;
+    else if (actionStr == "registration_ack")
+        return UdpMessageAction::REGISTRATION_ACK;
     else if (actionStr == "ping")
         return UdpMessageAction::PING;
     else
@@ -38,6 +43,8 @@ static String actionToString(UdpMessageAction action)
         return "restart";
     case UdpMessageAction::BLINK_BUILTIN_LED:
         return "blink_builtin_led";
+    case UdpMessageAction::REGISTRATION_ACK:
+        return "registration_ack";
     case UdpMessageAction::PING:
         return "ping";
     default:
@@ -130,3 +137,5 @@ bool deserializeUdpMessage(const uint8_t *payload, size_t length, UdpMessageDTO 
     msg.timestamp = doc["timestamp"] | millis();
     return true;
 }
+
+#pragma GCC diagnostic pop

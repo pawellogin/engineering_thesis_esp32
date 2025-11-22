@@ -1,3 +1,5 @@
 #pragma once
 
-void pingGateway();
+void clientUtilsPingGateway();
+
+void clientUtilsRegistrationAck();

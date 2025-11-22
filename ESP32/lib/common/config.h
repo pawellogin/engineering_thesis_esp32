@@ -1,5 +1,6 @@
 #pragma once
 
+// TODO proably move every initialization to .h file, remove config.cpp file
 #define DEBUG_ENABLED true
 #define NETWORK_MODE 1 // 1=STA, 2=AP, AP == local wifi, STA == connects to hotspot
 

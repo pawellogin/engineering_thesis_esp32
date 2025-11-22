@@ -37,13 +37,13 @@ static unsigned long previousMillis = 0;
 static unsigned long blinkDuration = 0;
 static bool blinking = false;
 
-void initDebugLED()
+void initBuiltInLED()
 {
     pinMode(BUILTIN_LED, OUTPUT);
     digitalWrite(BUILTIN_LED, LOW);
 }
 
-void blinkLED(unsigned long durationMs)
+void blinkBuiltInLED(unsigned long durationMs)
 {
     blinkDuration = durationMs;
     blinking = true;
@@ -52,7 +52,7 @@ void blinkLED(unsigned long durationMs)
     digitalWrite(BUILTIN_LED, HIGH);
 }
 
-void handleLED()
+void handleBuiltInLED()
 {
     if (blinking && millis() - previousMillis >= blinkDuration)
     {
@@ -60,4 +60,9 @@ void handleLED()
         blinking = false;
         digitalWrite(BUILTIN_LED, LOW);
     }
+}
+
+void restartESP()
+{
+    esp_restart();
 }

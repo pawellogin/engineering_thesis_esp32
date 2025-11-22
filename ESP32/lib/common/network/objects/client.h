@@ -11,6 +11,13 @@ struct ClientInfo
     bool connected;
 };
 
-ClientInfo clients[max_clients];
+extern ClientInfo clients[];
 
-bool registerClient(IPAddress ip);
+enum class ClientRegisterResult
+{
+    ALREADY_REGISTERED,
+    NEW_REGISTERED,
+    NO_SPACE
+};
+
+ClientRegisterResult registerClient(IPAddress ip);

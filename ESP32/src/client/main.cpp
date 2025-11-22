@@ -9,7 +9,7 @@ void setup()
   Serial.begin(115200);
   LOG_INFO("Client starting...");
 
-  initDebugLED();
+  initBuiltInLED();
 
   // 1. Connect to the same network as the gateway
   if (!clientWiFiConnect(sta_ssid, sta_password))
@@ -33,7 +33,7 @@ void setup()
 
 void loop()
 {
-  handleLED();
+  handleBuiltInLED();
   clientUdpLoop();
-  clientUdpTestPing();
+  clientUdpDiscoverPing();
 }
