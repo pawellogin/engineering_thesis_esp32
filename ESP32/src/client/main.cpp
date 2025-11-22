@@ -1,8 +1,9 @@
 #include <Arduino.h>
-#include "network/clientWifi.h"
+#include "network/wifi/clientWifi.h"
 #include "network/UDP/clientUdp.h"
 #include "config.h"
 #include "debug.h"
+#include "network/ota/otaUtils.h"
 
 void setup()
 {
@@ -17,6 +18,8 @@ void setup()
     LOG_ERROR("Wi-Fi failed, aborting");
     return;
   }
+
+  clientOtaInit();
 
   // 2. Discover gateway via mDNS
   gatewayIP = discoverGatewayIP(mDNS_hostname); // "esp-gateway"
@@ -35,5 +38,7 @@ void loop()
 {
   handleBuiltInLED();
   clientUdpLoop();
+  clientOtaLoop();
+
   clientUdpDiscoverPing();
 }

@@ -1,0 +1,11 @@
+#pragma once
+#include <Arduino.h>
+#include <WiFi.h>
+
+#ifndef BOARD_ID
+#error "BOARD_ID must be defined in platformio.ini using -DBOARD_ID=X"
+#endif
+
+IPAddress getStaticIP();
+IPAddress getGateway();
+IPAddress getSubnet();

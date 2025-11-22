@@ -1,8 +1,10 @@
 #include "clientWifi.h"
 #include "debug.h"
+#include "network/wifi/staticIpConfig.h"
 
 bool clientWiFiConnect(const char *ssid, const char *password, unsigned long timeoutMs)
 {
+    WiFi.config(getStaticIP(), getGateway(), getSubnet());
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
 
@@ -55,9 +57,4 @@ IPAddress discoverGatewayIP(const char *hostname, unsigned long timeoutMs)
     }
 
     return gatewayIP;
-}
-
-IPAddress clientGetIP()
-{
-    return WiFi.localIP();
 }

@@ -11,6 +11,11 @@ const unsigned int wifi_timeout = 1000 * 3600;
 
 const char *mDNS_hostname = "esp-gateway";
 
+const char *ota_password = "ota_password";
+
+IPAddress gatewayIp = IPAddress(192, 168, 137, 1);
+IPAddress subnetIp = IPAddress(255, 255, 255, 0);
+
 // General configuration
 // constexpr int max_clients = 10;
 // unsigned int udp_port = 8000;

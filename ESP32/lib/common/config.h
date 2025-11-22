@@ -1,4 +1,6 @@
 #pragma once
+#include <IPAddress.h>
+#include <Arduino.h>
 
 // TODO proably move every initialization to .h file, remove config.cpp file
 #define DEBUG_ENABLED true
@@ -16,6 +18,12 @@ extern const char *sta_password;
 extern const unsigned int wifi_timeout;
 
 extern const char *mDNS_hostname;
+
+// OTA config (Over The Air)
+extern const char *ota_password;
+
+extern IPAddress gatewayIp;
+extern IPAddress subnetIp;
 
 // UDP configuration
 constexpr int max_clients = 10;

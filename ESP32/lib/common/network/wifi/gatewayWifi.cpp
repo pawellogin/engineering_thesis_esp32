@@ -1,7 +1,10 @@
-#include "wifi.h"
+#include "gatewayWifi.h"
+#include "network/wifi/staticIpConfig.h"
 
 bool connectToHotspot(const char *ssid, const char *password, unsigned long timeoutMs)
 {
+
+    WiFi.config(getStaticIP(), getGateway(), getSubnet());
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
 
