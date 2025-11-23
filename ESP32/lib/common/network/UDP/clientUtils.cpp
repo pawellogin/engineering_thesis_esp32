@@ -19,5 +19,8 @@ void clientUtilsPingGateway()
 
 void clientUtilsRegistrationAck()
 {
-    ledBlink(builtInLed, 5000);
+    ledBlink(builtInLed, 1000);
+    showClientState(ClientState::STATE_READY);
+
+    // TODO add better way to show connection, preferably show special animation on the led strip
 }

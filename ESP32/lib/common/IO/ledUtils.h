@@ -41,8 +41,20 @@ ColorEnum getDefaultColorForBoard(uint8_t boardId);
 void ledStripInit(LedStripController &ledCtrl);
 void ledStripShowColor(LedStripController &ledCtrl, ColorEnum color, uint8_t brightness = 100);
 void ledStripClear(LedStripController &ledCtrl);
-void ledStripAnimStart(LedStripController &ledCtrl, ColorEnum color, unsigned long intervalMs);
+void ledStripAnimStart(LedStripController &ledCtrl, ColorEnum color, unsigned long intervalMs = 100);
 void ledStripAnimHandle(LedStripController &ledCtrl);
+
+enum class ClientState
+{
+    STATE_SETUP,
+    STATE_WAITING_FOR_CONNECTION,
+    STATE_WAITING_FOR_ACKNOWLEDGE,
+    STATE_CONNECTED_ACK,
+    STATE_READY,
+    STATE_COMMUNICATION_ERROR
+};
+
+void showClientState(ClientState state);
 
 struct LedController
 {

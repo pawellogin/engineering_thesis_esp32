@@ -20,6 +20,7 @@ static UdpMessageType typeFromString(const String &typeStr)
 static UdpMessageAction actionFromString(const String &actionStr)
 {
 
+    // TODO find a way to check this for every possibility, switch wont work here i think
     if (actionStr == "restart")
         return UdpMessageAction::RESTART;
     else if (actionStr == "blink_builtin_led")
@@ -28,6 +29,8 @@ static UdpMessageAction actionFromString(const String &actionStr)
         return UdpMessageAction::REGISTRATION_ACK;
     else if (actionStr == "ping")
         return UdpMessageAction::PING;
+    else if (actionStr == "esp_game_test")
+        return UdpMessageAction::ESP_GAME_TEST;
     else
     {
         LOG_ERROR("Missing actionFromString conversion");
@@ -45,6 +48,8 @@ static String actionToString(UdpMessageAction action)
         return "blink_builtin_led";
     case UdpMessageAction::REGISTRATION_ACK:
         return "registration_ack";
+    case UdpMessageAction::ESP_GAME_TEST:
+        return "esp_game_test";
     case UdpMessageAction::PING:
         return "ping";
     default:
@@ -122,7 +127,7 @@ bool deserializeUdpMessage(const uint8_t *payload, size_t length, UdpMessageDTO 
         LOG_INFO("Missing 'action' property in json");
     }
 
-    if (!doc["data"].isNull())
+    if (doc["data"].is<const char *>())
     {
         String temp;
         serializeJson(doc["data"], temp); // get raw string representation
@@ -130,7 +135,7 @@ bool deserializeUdpMessage(const uint8_t *payload, size_t length, UdpMessageDTO 
     }
     else
     {
-        LOG_INFO("Missing 'data' property in json");
+        LOG_INFO("Missing 'data' property in UDP json");
         msg.data = "";
     }
 

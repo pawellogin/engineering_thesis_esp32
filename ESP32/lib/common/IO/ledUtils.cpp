@@ -108,6 +108,33 @@ void ledStripAnimHandle(LedStripController &ledCtrl)
     }
 }
 
+void showClientState(ClientState state)
+{
+    switch (state)
+    {
+    case ClientState::STATE_SETUP:
+        ledStripClear(ledStrip);
+        ledStripShowColor(ledStrip, getDefaultColorForBoard(BOARD_ID));
+        break;
+    case ClientState::STATE_WAITING_FOR_CONNECTION:
+        ledStripAnimStart(ledStrip, getDefaultColorForBoard(BOARD_ID), 50);
+        break;
+    case ClientState::STATE_WAITING_FOR_ACKNOWLEDGE:
+        ledStripAnimStart(ledStrip, getDefaultColorForBoard(BOARD_ID), 10);
+        break;
+    case ClientState::STATE_CONNECTED_ACK:
+        ledStripClear(ledStrip);
+        ledStripShowColor(ledStrip, getDefaultColorForBoard(BOARD_ID));
+        break;
+    case ClientState::STATE_READY:
+        ledStripAnimStart(ledStrip, getDefaultColorForBoard(BOARD_ID), 1000);
+        break;
+    case ClientState::STATE_COMMUNICATION_ERROR:
+        ledStripAnimStart(ledStrip, RED, 200);
+        break;
+    }
+}
+
 LedController builtInLed;
 LedController buttonLed;
 

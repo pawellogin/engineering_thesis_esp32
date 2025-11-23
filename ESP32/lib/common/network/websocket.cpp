@@ -19,7 +19,9 @@ static void processWebsocketCommand(const WebMessageDTO &msg)
         gatewayUtilsRestartClients();
         restartESP();
         break;
-
+    case WebMessageAction::RESTART_CLIENTS:
+        gatewayUtilsRestartClients();
+        break;
     case WebMessageAction::BLINK_CLIENTS_LED:
         LOG_INFO("BLINK_CLIENTS_LED command received");
         gatewayUtilsBlinkClientsLed();
@@ -29,6 +31,10 @@ static void processWebsocketCommand(const WebMessageDTO &msg)
         ledBlink(builtInLed);
         break;
     case WebMessageAction::PING:
+        break;
+    case WebMessageAction::START_ESP_TEST_GAME:
+
+        break;
         break;
     default:
         LOG_ERROR("Unknown command action");

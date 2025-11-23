@@ -34,5 +34,8 @@ void broadcastDebug()
 
 void restartESP()
 {
+    ledStripClear(ledStrip);
+    delay(1000);
+
     esp_restart();
 }

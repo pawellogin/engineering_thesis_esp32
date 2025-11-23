@@ -14,8 +14,9 @@ void setup()
 
   ledInit(builtInLed, BUILTIN_LED);
   ledStripInit(ledStrip);
-  ledStripShowColor(ledStrip, getDefaultColorForBoard(BOARD_ID));
-  ledStripAnimStart(ledStrip, getDefaultColorForBoard(BOARD_ID), 50);
+  ledStripClear(ledStrip);
+
+  showClientState(ClientState::STATE_SETUP);
 
   buttonInit(mainButton, MAIN_BUTTON);
 
@@ -23,6 +24,7 @@ void setup()
   // ledInit(buttonLed, BUTTON_LED);
 
   // 1. Connect to the same network as the gateway
+  delay(2000);
   if (!clientWiFiConnect(sta_ssid, sta_password))
   {
     LOG_ERROR("Wi-Fi failed, aborting");
@@ -32,16 +34,18 @@ void setup()
   clientOtaInit();
 
   // 2. Discover gateway via mDNS
+  showClientState(ClientState::STATE_WAITING_FOR_CONNECTION);
   gatewayIP = discoverGatewayIP(mDNS_hostname); // "esp-gateway"
   if (gatewayIP.toString() == "0.0.0.0")
   {
     LOG_ERROR("Gateway not found via mDNS, cannot start UDP");
     return;
   }
-
   // 3. Start UDP
   clientUdpInit();
-  setGatewayIP(gatewayIP); // you’ll add this in clientUdp.cpp
+  setGatewayIP(gatewayIP);
+
+  showClientState(ClientState::STATE_WAITING_FOR_ACKNOWLEDGE);
 }
 
 void loop()

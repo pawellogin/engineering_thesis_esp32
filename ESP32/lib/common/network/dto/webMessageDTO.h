@@ -14,9 +14,12 @@ enum class WebMessageType
 enum class WebMessageAction
 {
     RESTART,
+    RESTART_CLIENTS,
     BLINK_CLIENTS_LED,
     BLINK_GATEWAY_LED,
-    PING
+    PING,
+
+    START_ESP_TEST_GAME,
 };
 
 /*

@@ -19,6 +19,8 @@ static WebMessageAction actionFromString(const String &actionStr)
 
     if (actionStr == "restart")
         return WebMessageAction::RESTART;
+    else if (actionStr == "restart_clients")
+        return WebMessageAction::RESTART_CLIENTS;
     else if (actionStr == "blink_clients_led")
         return WebMessageAction::BLINK_CLIENTS_LED;
     else if (actionStr == "blink_gateway_led")
@@ -70,7 +72,7 @@ bool deserializeWebMessage(const uint8_t *payload, size_t length, WebMessageDTO 
     }
     else
     {
-        LOG_INFO("Missing 'data' property in json");
+        LOG_INFO("Missing 'data' property in web msg json");
         msg.data = "";
     }
 
@@ -107,6 +109,8 @@ String actionToString(WebMessageAction action)
     {
     case WebMessageAction::RESTART:
         return "restart";
+    case WebMessageAction::RESTART_CLIENTS:
+        return "restart_clients";
     case WebMessageAction::BLINK_CLIENTS_LED:
         return "blink_clients_led";
     case WebMessageAction::BLINK_GATEWAY_LED:

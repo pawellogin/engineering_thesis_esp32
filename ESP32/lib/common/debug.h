@@ -4,6 +4,7 @@
 #include <WebSocketsServer.h>
 #include "config.h"
 #include "esp_system.h"
+#include "IO/ledUtils.h"
 
 // Logging Macros
 // ERROR

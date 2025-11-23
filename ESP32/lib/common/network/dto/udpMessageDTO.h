@@ -16,7 +16,9 @@ enum class UdpMessageAction
     RESTART,
     BLINK_BUILTIN_LED,
     REGISTRATION_ACK,
-    PING
+    PING,
+
+    ESP_GAME_TEST,
 };
 
 /*

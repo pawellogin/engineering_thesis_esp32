@@ -16,16 +16,21 @@ void gatewayUdpInit()
     }
     else
     {
-        Serial.println("UDP Failed to start.");
+        LOG_INFO("UDP Failed to start.");
     }
 }
 
 void proccessClientCommand(const UdpMessageDTO &msg, IPAddress clientIP)
 {
     // gateway will not get most if any of those commands
+    // TODO
+    // gateway wil never use this, remove this probably
     switch (msg.action)
     {
+        // TODO think fo a better way to handle registration ack
     case UdpMessageAction::PING:
+        gatewayUtilsRegistrationAck(clientIP);
+    case UdpMessageAction::ESP_GAME_TEST:
     case UdpMessageAction::BLINK_BUILTIN_LED:
     case UdpMessageAction::REGISTRATION_ACK:
     case UdpMessageAction::RESTART:
@@ -55,7 +60,7 @@ void gatewayUdpLoop()
         LOG_INFO("UDP Received from %s: %s\n", ip.toString().c_str(), incomingPacket);
 
         UdpMessageDTO msg;
-        if (deserializeUdpMessage((uint8_t *)incomingPacket, len, msg)) // implement this using ArduinoJson
+        if (deserializeUdpMessage((uint8_t *)incomingPacket, len, msg))
         {
             switch (msg.type)
             {
