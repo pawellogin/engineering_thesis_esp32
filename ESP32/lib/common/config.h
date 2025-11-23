@@ -8,6 +8,7 @@
 
 // Led pins
 #define BUILTIN_LED 2
+#define BUTTON_LED 25
 
 // Wi-Fi configuration (declarations only)
 extern const char *ap_ssid;

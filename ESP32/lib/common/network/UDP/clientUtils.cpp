@@ -19,5 +19,5 @@ void clientUtilsPingGateway()
 
 void clientUtilsRegistrationAck()
 {
-    blinkBuiltInLED(5000);
+    ledBlink(builtInLed, 5000);
 }

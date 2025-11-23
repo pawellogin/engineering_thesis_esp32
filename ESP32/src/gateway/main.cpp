@@ -8,6 +8,7 @@
 #include "network/websocket.h"
 #include "network/UDP/gatewayUdp.h"
 #include "network/dto/udpMessageDTO.h"
+#include "IO/ledUtils.h"
 
 JsonDocument doc;
 
@@ -24,13 +25,15 @@ void setup()
     gatewayUdpInit();
   }
 
-  initBuiltInLED();
+  ledInit(builtInLed, BUILTIN_LED);
+  ledInit(buttonLed, BUTTON_LED);
 }
 
 void loop()
 {
   webSocketLoop();
-  handleBuiltInLED();
+  ledHandle(builtInLed);
+  ledHandle(buttonLed);
   gatewayUdpLoop();
 
   static unsigned long last = 0;
@@ -39,7 +42,7 @@ void loop()
   {
 
     last = millis();
-    // blinkBuiltInLED();
+    // ledBlink();
     // broadcastDebug();
   }
 }

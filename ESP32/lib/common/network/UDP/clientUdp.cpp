@@ -46,7 +46,7 @@ static void processGatewayCommand(const UdpMessageDTO &msg)
         restartESP();
         break;
     case UdpMessageAction::BLINK_BUILTIN_LED:
-        blinkBuiltInLED();
+        ledBlink(builtInLed);
         break;
     case UdpMessageAction::REGISTRATION_ACK:
         // TODO add blinking the main led and led strip here, also make led strip correct color depending on the number

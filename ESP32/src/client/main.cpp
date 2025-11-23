@@ -4,13 +4,16 @@
 #include "config.h"
 #include "debug.h"
 #include "network/ota/otaUtils.h"
+#include "IO/ledUtils.h"
 
 void setup()
 {
   Serial.begin(115200);
   LOG_INFO("Client starting...");
 
-  initBuiltInLED();
+  ledInit(builtInLed, BUILTIN_LED);
+  // TODO button led needs correct ground, get correct cables and change the machine itself
+  // ledInit(buttonLed, BUTTON_LED);
 
   // 1. Connect to the same network as the gateway
   if (!clientWiFiConnect(sta_ssid, sta_password))
@@ -36,9 +39,19 @@ void setup()
 
 void loop()
 {
-  handleBuiltInLED();
+  ledHandle(builtInLed);
+  // ledHandle(buttonLed);
   clientUdpLoop();
   clientOtaLoop();
 
   clientUdpDiscoverPing();
+
+  static unsigned long last = 0;
+
+  if (millis() - last > 2000)
+  {
+
+    last = millis();
+    // ledBlink(buttonLed);
+  }
 }

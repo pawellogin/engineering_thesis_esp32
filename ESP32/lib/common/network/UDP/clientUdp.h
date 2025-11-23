@@ -5,6 +5,7 @@
 #include "debug.h"
 #include "network/dto/udpMessageDTO.h"
 #include "network/UDP/clientUtils.h"
+#include "IO/ledUtils.h"
 
 extern IPAddress gatewayIP;
 

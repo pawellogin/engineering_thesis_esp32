@@ -25,7 +25,7 @@ static void processWebsocketCommand(const WebMessageDTO &msg)
         break;
     case WebMessageAction::BLINK_GATEWAY_LED:
         LOG_INFO("BLINK_GATEWAY_LED command received");
-        blinkBuiltInLED();
+        ledBlink(builtInLed);
         break;
     case WebMessageAction::PING:
         break;

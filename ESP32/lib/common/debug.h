@@ -38,10 +38,4 @@ void heartbeatDebug();
 void setDebugWebSocket(WebSocketsServer *ws);
 void broadcastDebug();
 
-// TODO move to LED utils file
-// Debug LED
-void initBuiltInLED();
-void handleBuiltInLED();
-void blinkBuiltInLED(unsigned long durationMS = 200);
-
 void restartESP();
