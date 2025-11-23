@@ -14,9 +14,10 @@ static void processWebsocketCommand(const WebMessageDTO &msg)
 {
     switch (msg.action)
     {
+        // TODO maybe make separate action for gateway and clients restart
     case WebMessageAction::RESTART:
+        gatewayUtilsRestartClients();
         restartESP();
-        // TODO restartSystem();
         break;
 
     case WebMessageAction::BLINK_CLIENTS_LED:

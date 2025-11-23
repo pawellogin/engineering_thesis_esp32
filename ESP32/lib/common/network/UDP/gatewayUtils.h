@@ -5,4 +5,6 @@
 
 void gatewayUtilsBlinkClientsLed();
 
+void gatewayUtilsRestartClients();
+
 void gatewayUtilsRegistrationAck(IPAddress ip);

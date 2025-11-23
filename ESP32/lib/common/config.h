@@ -6,9 +6,12 @@
 #define DEBUG_ENABLED true
 #define NETWORK_MODE 1 // 1=STA, 2=AP, AP == local wifi, STA == connects to hotspot
 
-// Led pins
+// IO pins
 #define BUILTIN_LED 2
 #define BUTTON_LED 25
+#define MAIN_BUTTON 5
+
+#define LED_STRIP_PIXELS 24
 
 // Wi-Fi configuration (declarations only)
 extern const char *ap_ssid;

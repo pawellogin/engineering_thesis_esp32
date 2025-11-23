@@ -5,6 +5,7 @@
 #include "debug.h"
 #include "network/ota/otaUtils.h"
 #include "IO/ledUtils.h"
+#include "IO/buttonUtils.h"
 
 void setup()
 {
@@ -12,6 +13,12 @@ void setup()
   LOG_INFO("Client starting...");
 
   ledInit(builtInLed, BUILTIN_LED);
+  ledStripInit(ledStrip);
+  ledStripShowColor(ledStrip, getDefaultColorForBoard(BOARD_ID));
+  ledStripAnimStart(ledStrip, getDefaultColorForBoard(BOARD_ID), 50);
+
+  buttonInit(mainButton, MAIN_BUTTON);
+
   // TODO button led needs correct ground, get correct cables and change the machine itself
   // ledInit(buttonLed, BUTTON_LED);
 
@@ -39,19 +46,27 @@ void setup()
 
 void loop()
 {
-  ledHandle(builtInLed);
+  // TODO button led has hardware isues with gnd
   // ledHandle(buttonLed);
+
+  ledHandle(builtInLed);
   clientUdpLoop();
   clientOtaLoop();
+  ledStripAnimHandle(ledStrip);
 
   clientUdpDiscoverPing();
+
+  // TODO test, remove me
+  if (buttonWasPressed(mainButton))
+  {
+    ledStripClear(ledStrip);
+    // ledStripShowColor(ledStrip, RED, );
+  }
 
   static unsigned long last = 0;
 
   if (millis() - last > 2000)
   {
-
     last = millis();
-    // ledBlink(buttonLed);
   }
 }

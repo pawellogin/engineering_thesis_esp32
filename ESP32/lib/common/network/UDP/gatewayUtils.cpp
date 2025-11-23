@@ -15,6 +15,21 @@ void gatewayUtilsBlinkClientsLed()
     gatewayUdpSendAll(serializedMsg.c_str());
 }
 
+void gatewayUtilsRestartClients()
+{
+    LOG_INFO("restart clients command received");
+    UdpMessageDTO msg;
+
+    msg.action = UdpMessageAction::RESTART;
+    msg.type = UdpMessageType::COMMAND;
+    msg.data = "";
+    msg.timestamp = millis();
+
+    String serializedMsg = serializeUdpMessage(msg);
+
+    gatewayUdpSendAll(serializedMsg.c_str());
+}
+
 void gatewayUtilsRegistrationAck(IPAddress ip)
 {
     LOG_INFO("Registration ack command received");
