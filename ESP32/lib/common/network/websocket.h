@@ -7,3 +7,4 @@
 
 void setupWebSocket();
 void webSocketLoop();
+void wsSendMessage(const WebMessageDTO &msg);

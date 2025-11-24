@@ -127,16 +127,14 @@ bool deserializeUdpMessage(const uint8_t *payload, size_t length, UdpMessageDTO 
         LOG_INFO("Missing 'action' property in json");
     }
 
-    if (doc["data"].is<const char *>())
+    // TODO handle this better, rn if we have number in json this do not work correct
+    if (!doc["data"].isNull())
     {
-        String temp;
-        serializeJson(doc["data"], temp); // get raw string representation
-        msg.data = temp;
+        msg.data = String(doc["data"].as<String>());
     }
     else
     {
-        LOG_INFO("Missing 'data' property in UDP json");
-        msg.data = "";
+        msg.data = "NO DATA ERROR";
     }
 
     msg.timestamp = doc["timestamp"] | millis();

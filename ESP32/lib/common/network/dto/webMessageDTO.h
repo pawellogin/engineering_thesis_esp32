@@ -18,6 +18,7 @@ enum class WebMessageAction
     BLINK_CLIENTS_LED,
     BLINK_GATEWAY_LED,
     PING,
+    GET_SYSTEM_INFO,
 
     START_ESP_TEST_GAME,
 };

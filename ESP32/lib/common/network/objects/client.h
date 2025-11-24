@@ -3,14 +3,10 @@
 #include "config.h"
 #include <Arduino.h>
 #include "debug.h"
+#include "network/dto/clientListDTO.h"
+#include "clientInfo.h"
 
-struct ClientInfo
-{
-    IPAddress ip;
-    unsigned long lastSeen; // for timeout / ping
-    bool connected;
-};
-
+// TODO move to different dir
 extern ClientInfo clients[];
 
 enum class ClientRegisterResult
@@ -20,4 +16,6 @@ enum class ClientRegisterResult
     NO_SPACE
 };
 
-ClientRegisterResult registerClient(IPAddress ip);
+ClientRegisterResult registerClient(IPAddress ip, uint8_t boardId);
+
+ClientsListDTO getClientsListDTO();

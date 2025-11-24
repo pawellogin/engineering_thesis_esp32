@@ -50,7 +50,10 @@ void gatewayUdpLoop()
 
         IPAddress ip = udp.remoteIP();
 
-        ClientRegisterResult registerResult = registerClient(ip);
+        UdpMessageDTO msg;
+        bool deserializeResult = deserializeUdpMessage((uint8_t *)incomingPacket, len, msg);
+
+        ClientRegisterResult registerResult = registerClient(ip, (uint8_t)msg.data.toInt());
 
         if (registerResult == ClientRegisterResult::NEW_REGISTERED)
         {
@@ -59,8 +62,7 @@ void gatewayUdpLoop()
 
         LOG_INFO("UDP Received from %s: %s\n", ip.toString().c_str(), incomingPacket);
 
-        UdpMessageDTO msg;
-        if (deserializeUdpMessage((uint8_t *)incomingPacket, len, msg))
+        if (deserializeResult)
         {
             switch (msg.type)
             {

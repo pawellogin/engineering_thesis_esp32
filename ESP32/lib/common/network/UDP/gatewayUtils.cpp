@@ -42,5 +42,20 @@ void gatewayUtilsRegistrationAck(IPAddress ip)
     String serializedMsg = serializeUdpMessage(msg);
 
     gatewayUdpSend(ip, serializedMsg.c_str());
-    LOG_INFO("Registration ack command sent");
+    // LOG_INFO("Registration ack command sent");
+}
+
+void gatewayUtilsSendSystemInfo()
+{
+
+    WebMessageDTO msg;
+    ClientsListDTO dto = getClientsListDTO();
+
+    msg.action = WebMessageAction::GET_SYSTEM_INFO;
+    msg.type = WebMessageType::STATUS;
+    msg.data = serializeClientsDTO(dto);
+    msg.timestamp = millis();
+
+    wsSendMessage(msg);
+    LOG_INFO("System info send to ws ");
 }

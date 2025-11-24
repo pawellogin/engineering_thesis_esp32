@@ -8,7 +8,7 @@ void clientUtilsPingGateway()
 
     msg.type = UdpMessageType::COMMAND;
     msg.action = UdpMessageAction::PING;
-    msg.data = "PING";
+    msg.data = String(BOARD_ID);
     msg.timestamp = millis();
 
     String serializedMsg = serializeUdpMessage(msg);

@@ -16,7 +16,7 @@ static WebMessageType typeFromString(const String &typeStr)
 }
 static WebMessageAction actionFromString(const String &actionStr)
 {
-
+    // TODO think of a better system or check, this approach is error prone
     if (actionStr == "restart")
         return WebMessageAction::RESTART;
     else if (actionStr == "restart_clients")
@@ -27,6 +27,8 @@ static WebMessageAction actionFromString(const String &actionStr)
         return WebMessageAction::BLINK_GATEWAY_LED;
     else if (actionStr == "ping")
         return WebMessageAction::PING;
+    else if (actionStr == "get_system_info")
+        return WebMessageAction::GET_SYSTEM_INFO;
     else
     {
         LOG_ERROR("Missing actionFromString conversion");
@@ -115,6 +117,8 @@ String actionToString(WebMessageAction action)
         return "blink_clients_led";
     case WebMessageAction::BLINK_GATEWAY_LED:
         return "blink_gateway_led";
+    case WebMessageAction::GET_SYSTEM_INFO:
+        return "get_system_info";
     case WebMessageAction::PING:
         return "ping";
     default:

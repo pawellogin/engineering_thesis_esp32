@@ -35,6 +35,8 @@ static void processWebsocketCommand(const WebMessageDTO &msg)
     case WebMessageAction::START_ESP_TEST_GAME:
 
         break;
+    case WebMessageAction::GET_SYSTEM_INFO:
+        gatewayUtilsSendSystemInfo();
         break;
     default:
         LOG_ERROR("Unknown command action");
@@ -107,12 +109,14 @@ void webSocketLoop()
         webSocket->loop();
 }
 
-void sendMessage(const WebMessageDTO &msg)
+// TODO make a better name
+void wsSendMessage(const WebMessageDTO &msg)
 {
     if (adminClientId == 255)
         return;
 
     String json = serializeWebMessage(msg);
+    LOG_INFO("Sent to web socket : %s\n", json.c_str());
     webSocket->sendTXT(adminClientId, json.c_str());
 }
 

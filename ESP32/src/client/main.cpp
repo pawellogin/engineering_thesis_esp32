@@ -7,6 +7,7 @@
 #include "IO/ledUtils.h"
 #include "IO/buttonUtils.h"
 
+// TODO restart command sometimes do not work
 void setup()
 {
   Serial.begin(115200);
