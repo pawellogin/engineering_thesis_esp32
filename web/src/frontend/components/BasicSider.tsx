@@ -1,6 +1,7 @@
 /** @jsxImportSource @emotion/react */
 
 import {
+    BorderOuterOutlined,
     HomeOutlined,
     SettingOutlined
 } from "@ant-design/icons";
@@ -8,7 +9,7 @@ import { css } from "@emotion/react";
 import { Layout, Menu, theme } from "antd";
 import { useMemo, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { ESP32DebugPageRoute } from "../../backend/routes";
+import { ESP32DebugPageRoute, EspTestGameRoute, MemoryGameRoute } from "../../backend/routes";
 import WebsocketStatusBox from "./WebsocketStatusBox";
 
 const { Content, Sider } = Layout;
@@ -40,6 +41,18 @@ export default function BasicSider(props: BasicSiderProps) {
             icon: <SettingOutlined />,
             label: "Web socket config",
             onClick: () => navigate(ESP32DebugPageRoute)
+        },
+        {
+            key: "3",
+            icon: <BorderOuterOutlined />,
+            label: "Memory game",
+            onClick: () => navigate(MemoryGameRoute)
+        },
+        {
+            key: "4",
+            icon: <BorderOuterOutlined />,
+            label: "ESP test game",
+            onClick: () => navigate(EspTestGameRoute)
         }
     ], [navigate]);
 

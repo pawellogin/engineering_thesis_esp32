@@ -1,5 +1,12 @@
 export type MessageType = 'command' | 'status' | 'error';
-export type MessageAction = 'restart' | 'blink_clients_led' | 'blink_gateway_led' | string;
+export type MessageAction =
+    'restart' |
+    'restart_clients' |
+    'blink_clients_led' |
+    'blink_gateway_led' |
+    'start_esp_test_game' |
+    'get_system_info' |
+    string;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface MessageDTO<T = any> {

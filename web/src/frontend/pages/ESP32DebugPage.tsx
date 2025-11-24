@@ -3,16 +3,20 @@ import { css } from '@emotion/react';
 import { Button, Col, Flex, Form, Input, Row } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import { useCallback, useContext, useEffect } from 'react';
+import type { ClientsListDTO } from '../../backend/dto/ClientsListDTO';
 import type { MessageAction, MessageType } from '../../backend/websocket/types/WsTypes';
 import { useWebSocket } from '../../backend/websocket/useWebSocket';
 import { WebSocketContext } from '../../backend/websocket/WebSocketContext';
 import { pageWrapperCss } from '../utils/CSSC';
+
 
 type DebugPageFormType = {
     type: MessageType;
     action: MessageAction;
     data: string;
     url: string;
+
+    clients: ClientsListDTO;
 };
 
 export default function ESP32DebugPage() {
@@ -28,6 +32,15 @@ export default function ESP32DebugPage() {
             url: 'ws://esp-gateway.local:8001',
         });
     }, [form]);
+
+    useEffect(() => {
+
+        if (ws.lastMessage?.action === "get_system_info") {
+            console.log("system info received", ws.lastMessage);
+
+            form.setFieldValue("clients", ws.lastMessage.data);
+        }
+    }, [form, ws.lastMessage, ws.lastMessage?.action]);
 
     const sendMessage = useCallback(() => {
         if (ws) {
@@ -53,6 +66,18 @@ export default function ESP32DebugPage() {
         ws.sendCommand("blink_clients_led");
     }, [ws]);
 
+    const restartGatewayAndClients = useCallback(() => {
+        ws.sendCommand("restart");
+    }, [ws]);
+
+    const restartOnlyClients = useCallback(() => {
+        ws.sendCommand("restart_clients");
+    }, [ws]);
+
+    const getSystemInfo = useCallback(() => {
+        ws.sendCommand("get_system_info");
+    }, [ws]);
+
     return (
         <div css={pageWrapperCss}>
             <Form form={form} layout="vertical" css={formCss}>
@@ -73,11 +98,31 @@ export default function ESP32DebugPage() {
                             <Input />
                         </Form.Item>
                     </Col>
+
+                    <Col xs={24} md={24}>
+                        <Form.Item<DebugPageFormType> name="clients" label="Client system info">
+                            <div>
+                                {(form.getFieldValue("clients") as ClientsListDTO | undefined)?.items?.sort((x, y) => x.boardId - y.boardId)?.map((client, i) => (
+                                    <div key={i} style={{ marginBottom: '0.5rem' }}>
+                                        <strong>Client {i + 1}</strong>:<br />
+                                        IP: {client.ip} <br />
+                                        Board ID: {client.boardId} <br />
+                                        Last Seen: {client.lastSeen} ms <br />
+                                        Connected: {client.connected ? 'Yes' : 'No'}
+                                    </div>
+                                )) || <span>No clients</span>}
+                            </div>
+                        </Form.Item>
+
+                    </Col>
                 </Row>
 
                 <div css={buttonRowCss}>
                     <Button onClick={() => ws.sendCommand("blink_gateway_led")}>Blink gateway LED</Button>
                     <Button onClick={blinkClientsLED}>Blink clients LED</Button>
+                    <Button onClick={restartGatewayAndClients}>Restart gateway and clients </Button>
+                    <Button onClick={restartOnlyClients}>Restart only clients </Button>
+                    <Button onClick={getSystemInfo}>Get system info </Button>
                     <Button onClick={connect}>Connect</Button>
                     <Button onClick={sendMessage} type="primary">
                         Send
@@ -91,11 +136,21 @@ export default function ESP32DebugPage() {
 
 const formCss = css({
     width: '100%',
+    height: "100%",
     maxWidth: 600,
 });
 
 const buttonRowCss = css({
     display: 'flex',
+    flexDirection: "column",
+    overflowY: "auto",
     gap: '1rem',
     marginTop: '1rem',
+    height: "300px",
+
+    "& button": {
+        maxWidth: '256px',
+        minWidth: '256px',
+        marginInline: "auto",
+    }
 });
