@@ -12,28 +12,32 @@ static uint8_t adminClientId = 255;
 
 static void processWebsocketCommand(const WebMessageDTO &msg)
 {
+
     switch (msg.action)
     {
         // TODO maybe make separate action for gateway and clients restart
-    case WebMessageAction::RESTART:
+    case WebMessageAction::RESTART_ALL:
         gatewayUtilsRestartClients();
         restartESP();
         break;
     case WebMessageAction::RESTART_CLIENTS:
         gatewayUtilsRestartClients();
         break;
+    case WebMessageAction::RESTART_GATEWAY:
+        restartESP();
+        break;
     case WebMessageAction::BLINK_CLIENTS_LED:
-        LOG_INFO("BLINK_CLIENTS_LED command received");
+        // LOG_INFO("BLINK_CLIENTS_LED command received");
         gatewayUtilsBlinkClientsLed();
         break;
     case WebMessageAction::BLINK_GATEWAY_LED:
-        LOG_INFO("BLINK_GATEWAY_LED command received");
+        // LOG_INFO("BLINK_GATEWAY_LED command received");
         ledBlink(builtInLed);
         break;
     case WebMessageAction::PING:
         break;
     case WebMessageAction::START_ESP_TEST_GAME:
-
+        startGame(&espTestGameGateway.base);
         break;
     case WebMessageAction::GET_SYSTEM_INFO:
         gatewayUtilsSendSystemInfo();

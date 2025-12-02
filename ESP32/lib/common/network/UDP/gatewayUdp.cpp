@@ -29,11 +29,13 @@ void proccessClientCommand(const UdpMessageDTO &msg, IPAddress clientIP)
     {
         // TODO think fo a better way to handle registration ack
     case UdpMessageAction::PING:
-        gatewayUtilsRegistrationAck(clientIP);
-    case UdpMessageAction::ESP_GAME_TEST:
+        // gatewayUtilsRegistrationAck(clientIP);
+    case UdpMessageAction::TEST_GAME_START:
+    case UdpMessageAction::TEST_GAME_STATUS:
+    case UdpMessageAction::TEST_GAME_END:
     case UdpMessageAction::BLINK_BUILTIN_LED:
     case UdpMessageAction::REGISTRATION_ACK:
-    case UdpMessageAction::RESTART:
+    case UdpMessageAction::RESTART_ALL:
     default:
         break;
     }

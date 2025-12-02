@@ -9,6 +9,8 @@
 #include "network/UDP/gatewayUdp.h"
 #include "network/dto/udpMessageDTO.h"
 #include "IO/ledUtils.h"
+#include "games/gameBase.h"
+#include "games/testGameGateway.h"
 
 JsonDocument doc;
 
@@ -25,6 +27,7 @@ void setup()
     gatewayUdpInit();
   }
 
+  testGameGatewaySetup();
   ledInit(builtInLed, BUILTIN_LED);
   ledInit(buttonLed, BUTTON_LED);
 }
@@ -35,6 +38,8 @@ void loop()
   ledHandle(builtInLed);
   ledHandle(buttonLed);
   gatewayUdpLoop();
+
+  handleGame(&espTestGameGateway.base);
 
   static unsigned long last = 0;
 

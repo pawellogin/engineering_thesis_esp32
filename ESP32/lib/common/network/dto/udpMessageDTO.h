@@ -13,12 +13,14 @@ enum class UdpMessageType
 
 enum class UdpMessageAction
 {
-    RESTART,
+    RESTART_ALL,
     BLINK_BUILTIN_LED,
     REGISTRATION_ACK,
     PING,
 
-    ESP_GAME_TEST,
+    TEST_GAME_START,
+    TEST_GAME_STATUS,
+    TEST_GAME_END,
 };
 
 /*

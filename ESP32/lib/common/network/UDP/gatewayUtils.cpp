@@ -20,7 +20,7 @@ void gatewayUtilsRestartClients()
     LOG_INFO("UDP restart clients command received");
     UdpMessageDTO msg;
 
-    msg.action = UdpMessageAction::RESTART;
+    msg.action = UdpMessageAction::RESTART_ALL;
     msg.type = UdpMessageType::COMMAND;
     msg.data = "restart";
     msg.timestamp = millis();

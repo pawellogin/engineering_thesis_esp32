@@ -1,4 +1,6 @@
 #include "webMessageDTO.h"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic error "-Wswitch-enum"
 
 static WebMessageType typeFromString(const String &typeStr)
 {
@@ -17,10 +19,12 @@ static WebMessageType typeFromString(const String &typeStr)
 static WebMessageAction actionFromString(const String &actionStr)
 {
     // TODO think of a better system or check, this approach is error prone
-    if (actionStr == "restart")
-        return WebMessageAction::RESTART;
+    if (actionStr == "restart_all")
+        return WebMessageAction::RESTART_ALL;
     else if (actionStr == "restart_clients")
         return WebMessageAction::RESTART_CLIENTS;
+    else if (actionStr == "restart_gateway")
+        return WebMessageAction::RESTART_GATEWAY;
     else if (actionStr == "blink_clients_led")
         return WebMessageAction::BLINK_CLIENTS_LED;
     else if (actionStr == "blink_gateway_led")
@@ -29,9 +33,11 @@ static WebMessageAction actionFromString(const String &actionStr)
         return WebMessageAction::PING;
     else if (actionStr == "get_system_info")
         return WebMessageAction::GET_SYSTEM_INFO;
+    else if (actionStr == "start_esp_test_game")
+        return WebMessageAction::START_ESP_TEST_GAME;
     else
     {
-        LOG_ERROR("Missing actionFromString conversion");
+        LOG_ERROR("Missing web actionFromString conversion");
         return static_cast<WebMessageAction>(-1); // Unknown
     }
 }
@@ -79,6 +85,11 @@ bool deserializeWebMessage(const uint8_t *payload, size_t length, WebMessageDTO 
     }
 
     msg.timestamp = doc["timestamp"] | millis();
+
+    String fullMsg;
+    serializeJson(doc, fullMsg);
+    LOG_INFO("WS received: %s", fullMsg.c_str());
+
     return true;
 }
 
@@ -109,16 +120,20 @@ String actionToString(WebMessageAction action)
 {
     switch (action)
     {
-    case WebMessageAction::RESTART:
-        return "restart";
+    case WebMessageAction::RESTART_ALL:
+        return "restart_all";
     case WebMessageAction::RESTART_CLIENTS:
         return "restart_clients";
+    case WebMessageAction::RESTART_GATEWAY:
+        return "restart_gateway";
     case WebMessageAction::BLINK_CLIENTS_LED:
         return "blink_clients_led";
     case WebMessageAction::BLINK_GATEWAY_LED:
         return "blink_gateway_led";
     case WebMessageAction::GET_SYSTEM_INFO:
         return "get_system_info";
+    case WebMessageAction::START_ESP_TEST_GAME:
+        return "start_esp_test_game";
     case WebMessageAction::PING:
         return "ping";
     default:
@@ -142,3 +157,5 @@ String typeToString(WebMessageType type)
         return "unknown";
     }
 }
+
+#pragma GCC diagnostic pop

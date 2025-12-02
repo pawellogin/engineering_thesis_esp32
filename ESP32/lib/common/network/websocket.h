@@ -4,6 +4,7 @@
 #include "network/dto/webMessageDTO.h"
 #include "debug.h"
 #include "IO/ledUtils.h"
+#include "games/testGameGateway.h"
 
 void setupWebSocket();
 void webSocketLoop();

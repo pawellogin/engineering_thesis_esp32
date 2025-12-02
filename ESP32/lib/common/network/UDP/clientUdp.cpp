@@ -60,7 +60,7 @@ static void processGatewayCommand(const UdpMessageDTO &msg)
 {
     switch (msg.action)
     {
-    case UdpMessageAction::RESTART:
+    case UdpMessageAction::RESTART_ALL:
         restartESP();
         break;
     case UdpMessageAction::BLINK_BUILTIN_LED:
@@ -70,7 +70,14 @@ static void processGatewayCommand(const UdpMessageDTO &msg)
         // TODO add blinking the main led and led strip here, also make led strip correct color depending on the number
         clientUtilsRegistrationAck();
         break;
-    case UdpMessageAction::ESP_GAME_TEST:
+    case UdpMessageAction::TEST_GAME_START:
+        startGame(&espTestGameClient.base);
+        // TODO
+        break;
+    case UdpMessageAction::TEST_GAME_STATUS:
+        break;
+    case UdpMessageAction::TEST_GAME_END:
+        // resetGame(&espTestGameClient.base);
         // TODO
         break;
     case UdpMessageAction::PING:
@@ -117,7 +124,7 @@ void clientUdpDiscoverPing(unsigned int interval)
 {
     static unsigned int lastSend = 0;
 
-    if (millis() - lastSend > 10000)
+    if (millis() - lastSend > 20000)
     {
         clientUtilsPingGateway();
         lastSend = millis();

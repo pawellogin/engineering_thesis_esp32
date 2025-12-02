@@ -14,7 +14,7 @@ ClientRegisterResult registerClient(IPAddress ip, uint8_t boardId)
         {
             if (clients[i].ip == ip)
             {
-                clients[i].lastSeen = 0;
+                clients[i].lastSeen = now - clients[i].lastSeen;
                 return ClientRegisterResult::ALREADY_REGISTERED;
             }
         }

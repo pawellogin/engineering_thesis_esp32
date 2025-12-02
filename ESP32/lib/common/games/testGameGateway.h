@@ -4,11 +4,11 @@
 #include "network/dto/udpMessageDTO.h"
 #include "network/UDP/gatewayUdp.h"
 
-struct EspTestGameGateway
+struct TetsGameGateway
 {
     Game base;
     int clientScores[max_clients];
 };
 
-extern EspTestGameGateway espTestGameGateway;
-void setupEspTestGameGateway();
+extern TetsGameGateway espTestGameGateway;
+void testGameGatewaySetup();

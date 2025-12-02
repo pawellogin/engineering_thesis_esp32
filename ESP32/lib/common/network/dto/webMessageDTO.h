@@ -13,8 +13,9 @@ enum class WebMessageType
 
 enum class WebMessageAction
 {
-    RESTART,
+    RESTART_ALL,
     RESTART_CLIENTS,
+    RESTART_GATEWAY,
     BLINK_CLIENTS_LED,
     BLINK_GATEWAY_LED,
     PING,

@@ -6,6 +6,7 @@
 #include "network/ota/otaUtils.h"
 #include "IO/ledUtils.h"
 #include "IO/buttonUtils.h"
+#include "games/testGameClient.h"
 
 // TODO restart command sometimes do not work
 void setup()
@@ -20,6 +21,7 @@ void setup()
   showClientState(ClientState::STATE_SETUP);
 
   buttonInit(mainButton, MAIN_BUTTON);
+  testGameClientSetup();
 
   // TODO button led needs correct ground, get correct cables and change the machine itself
   // ledInit(buttonLed, BUTTON_LED);
@@ -61,12 +63,14 @@ void loop()
 
   clientUdpDiscoverPing();
 
-  // TODO test, remove me
-  if (buttonWasPressed(mainButton))
-  {
-    ledStripClear(ledStrip);
-    // ledStripShowColor(ledStrip, RED, );
-  }
+  handleGame(&espTestGameClient.base);
+
+  // // TODO test, remove me
+  // if (buttonWasPressed(mainButton))
+  // {
+  //   ledStripClear(ledStrip);
+  //   // ledStripShowColor(ledStrip, RED, );
+  // }
 
   static unsigned long last = 0;
 

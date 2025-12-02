@@ -22,7 +22,7 @@ static UdpMessageAction actionFromString(const String &actionStr)
 
     // TODO find a way to check this for every possibility, switch wont work here i think
     if (actionStr == "restart")
-        return UdpMessageAction::RESTART;
+        return UdpMessageAction::RESTART_ALL;
     else if (actionStr == "blink_builtin_led")
         return UdpMessageAction::BLINK_BUILTIN_LED;
     else if (actionStr == "registration_ack")
@@ -30,10 +30,14 @@ static UdpMessageAction actionFromString(const String &actionStr)
     else if (actionStr == "ping")
         return UdpMessageAction::PING;
     else if (actionStr == "esp_game_test")
-        return UdpMessageAction::ESP_GAME_TEST;
+        return UdpMessageAction::TEST_GAME_START;
+    else if (actionStr == "test_game_status")
+        return UdpMessageAction::TEST_GAME_STATUS;
+    else if (actionStr == "test_game_end")
+        return UdpMessageAction::TEST_GAME_END;
     else
     {
-        LOG_ERROR("Missing actionFromString conversion");
+        LOG_ERROR("Missing udp actionFromString conversion");
         return static_cast<UdpMessageAction>(-1); // Unknown
     }
 }
@@ -42,14 +46,18 @@ static String actionToString(UdpMessageAction action)
 {
     switch (action)
     {
-    case UdpMessageAction::RESTART:
+    case UdpMessageAction::RESTART_ALL:
         return "restart";
     case UdpMessageAction::BLINK_BUILTIN_LED:
         return "blink_builtin_led";
     case UdpMessageAction::REGISTRATION_ACK:
         return "registration_ack";
-    case UdpMessageAction::ESP_GAME_TEST:
+    case UdpMessageAction::TEST_GAME_START:
         return "esp_game_test";
+    case UdpMessageAction::TEST_GAME_STATUS:
+        return "test_game_status";
+    case UdpMessageAction::TEST_GAME_END:
+        return "test_game_end";
     case UdpMessageAction::PING:
         return "ping";
     default:
