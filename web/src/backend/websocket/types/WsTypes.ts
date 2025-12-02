@@ -1,7 +1,8 @@
 export type MessageType = 'command' | 'status' | 'error';
 export type MessageAction =
-    'restart' |
+    'restart_all' |
     'restart_clients' |
+    'restart_gateway' |
     'blink_clients_led' |
     'blink_gateway_led' |
     'start_esp_test_game' |

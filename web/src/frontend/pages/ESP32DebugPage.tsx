@@ -39,6 +39,8 @@ export default function ESP32DebugPage() {
             console.log("system info received", ws.lastMessage);
 
             form.setFieldValue("clients", ws.lastMessage.data);
+            form.validateFields(['clients']); // forces rerender for that field
+
         }
     }, [form, ws.lastMessage, ws.lastMessage?.action]);
 
@@ -74,6 +76,10 @@ export default function ESP32DebugPage() {
         ws.sendCommand("restart_clients");
     }, [ws]);
 
+    const restartOnlyGateway = useCallback(() => {
+        ws.sendCommand("restart_gateway");
+    }, [ws]);
+
     const getSystemInfo = useCallback(() => {
         ws.sendCommand("get_system_info");
     }, [ws]);
@@ -99,22 +105,7 @@ export default function ESP32DebugPage() {
                         </Form.Item>
                     </Col>
 
-                    <Col xs={24} md={24}>
-                        <Form.Item<DebugPageFormType> name="clients" label="Client system info">
-                            <div>
-                                {(form.getFieldValue("clients") as ClientsListDTO | undefined)?.items?.sort((x, y) => x.boardId - y.boardId)?.map((client, i) => (
-                                    <div key={i} style={{ marginBottom: '0.5rem' }}>
-                                        <strong>Client {i + 1}</strong>:<br />
-                                        IP: {client.ip} <br />
-                                        Board ID: {client.boardId} <br />
-                                        Last Seen: {client.lastSeen} ms <br />
-                                        Connected: {client.connected ? 'Yes' : 'No'}
-                                    </div>
-                                )) || <span>No clients</span>}
-                            </div>
-                        </Form.Item>
 
-                    </Col>
                 </Row>
 
                 <div css={buttonRowCss}>
@@ -122,22 +113,50 @@ export default function ESP32DebugPage() {
                     <Button onClick={blinkClientsLED}>Blink clients LED</Button>
                     <Button onClick={restartGatewayAndClients}>Restart gateway and clients </Button>
                     <Button onClick={restartOnlyClients}>Restart only clients </Button>
+                    <Button onClick={restartOnlyGateway}>Restart only gateway </Button>
                     <Button onClick={getSystemInfo}>Get system info </Button>
                     <Button onClick={connect}>Connect</Button>
                     <Button onClick={sendMessage} type="primary">
                         Send
                     </Button>
                 </div>
+
+                <Col xs={24} md={24}>
+                    <Form.Item
+                        shouldUpdate={(prev, curr) => prev.clients !== curr.clients}
+                        noStyle
+                    >
+                        {({ getFieldValue }) => {
+                            const clients = getFieldValue("clients") as ClientsListDTO | undefined;
+                            return (
+                                <div>
+                                    {clients?.items
+                                        ?.sort((x, y) => x.boardId - y.boardId)
+                                        .map((client, i) => (
+                                            <div key={i} style={{ marginBottom: "0.5rem" }}>
+                                                <strong>Client {i + 1}</strong>:<br />
+                                                IP: {client.ip} <br />
+                                                Board ID: {client.boardId} <br />
+                                                Last Seen: {client.lastSeen} ms <br />
+                                                Connected: {client.connected ? "Yes" : "No"}
+                                            </div>
+                                        )) || <span>No clients</span>}
+                                </div>
+                            );
+                        }}
+                    </Form.Item>
+
+                </Col>
             </Form>
         </div>
     );
 }
 
 
-const formCss = css({
+export const formCss = css({
     width: '100%',
     height: "100%",
-    maxWidth: 600,
+    maxWidth: 1200,
 });
 
 const buttonRowCss = css({
