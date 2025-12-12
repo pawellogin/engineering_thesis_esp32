@@ -27,7 +27,7 @@ export default function ESP32DebugPage() {
     useEffect(() => {
         form.setFieldsValue({
             type: 'status',
-            action: 'ping',
+            action: undefined,
             data: 'test',
             url: 'ws://esp-gateway.local:8001',
         });
@@ -69,7 +69,7 @@ export default function ESP32DebugPage() {
     }, [ws]);
 
     const restartGatewayAndClients = useCallback(() => {
-        ws.sendCommand("restart");
+        ws.sendCommand("restart_all");
     }, [ws]);
 
     const restartOnlyClients = useCallback(() => {
