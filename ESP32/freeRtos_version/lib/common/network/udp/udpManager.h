@@ -1,11 +1,39 @@
 #pragma once
-#include <ArduinoJson.h>
-#include <Arduino.h>
-#include "debug.h"
+#include "WiFi.h"
 
-// TODO having status does not make sense when we have on type of action anyway, remove status, use command for passing data
+extern WiFiUDP udp;
+
+struct ClientInfo
+{
+    IPAddress ip;
+    unsigned long lastSeen; // for timeout / ping
+    bool connected;
+    uint8_t boardId;
+};
+
+struct ClientsListDTO
+{
+    // TODO remove count
+    uint8_t count;
+    ClientInfo *items;
+};
+
+extern ClientInfo clients[];
+
+enum class ClientRegisterResult
+{
+    ALREADY_REGISTERED,
+    NEW_REGISTERED,
+    NO_SPACE
+};
+
+ClientRegisterResult registerClient(IPAddress ip, uint8_t boardId);
+
+ClientsListDTO getClientsListDTO();
+
 enum class UdpMessageType
 {
+    UNKNOWN,
     COMMAND,
     // STATUS,
     // EVENT,
@@ -14,6 +42,7 @@ enum class UdpMessageType
 
 enum class UdpMessageAction
 {
+    UNKNOWN,
     RESTART_ALL,
     BLINK_BUILTIN_LED,
     REGISTRATION_ACK,
@@ -38,8 +67,10 @@ struct UdpMessageDTO
 String serializeUdpMessage(const UdpMessageDTO &msg);
 bool deserializeUdpMessage(const uint8_t *payload, size_t length, UdpMessageDTO &msg);
 
-// String actionToString(UdpMessageAction action);
-// String typeToString(UdpMessageType type);
+void udpInit();
 
-// UdpMessageType typeFromString(const String &typeStr);
-// UdpMessageAction actionFromString(const String &actionStr);
+void udpSendAll(const char *msg);
+
+void udpHandlePacket();
+
+void udpTask(void *p);

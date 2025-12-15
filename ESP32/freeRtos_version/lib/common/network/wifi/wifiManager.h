@@ -1,5 +1,4 @@
 #pragma once
-#include <Arduino.h>
 #include <WiFi.h>
 
 #ifndef BOARD_ID
@@ -9,3 +8,5 @@
 IPAddress getStaticIP();
 IPAddress getGateway();
 IPAddress getSubnet();
+
+bool connectToHotspot(const char *ssid, const char *password, unsigned long timeoutMs);

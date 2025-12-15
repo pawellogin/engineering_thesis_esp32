@@ -2,9 +2,6 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <WebSocketsServer.h>
-#include "config.h"
-#include "esp_system.h"
-#include "IO/ledUtils.h"
 
 // Logging Macros
 // ERROR
@@ -33,10 +30,5 @@
 #define LOG_DEBUG(fmt, ...)
 #define LOG_DEBUG_INLINE(fmt, ...)
 #endif
-
-// Optional external functions
-void heartbeatDebug();
-void setDebugWebSocket(WebSocketsServer *ws);
-void broadcastDebug();
 
 void restartESP();

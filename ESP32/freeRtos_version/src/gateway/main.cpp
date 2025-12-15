@@ -1,53 +1,46 @@
-#include <WiFi.h>
-#include <WiFiUdp.h>
-#include <WebSocketsServer.h>
-#include <ArduinoJson.h>
-#include "debug.h"
-#include "config.h"
-#include "network/wifi/gatewayWifi.h"
-#include "network/websocket.h"
-#include "network/UDP/gatewayUdp.h"
-#include "network/dto/udpMessageDTO.h"
-#include "IO/ledUtils.h"
-#include "games/gameBase.h"
-#include "games/testGameGateway.h"
-
-JsonDocument doc;
+#include <Arduino.h>
+#include "core/debug.h"
+#include "core/config.h"
+#include "network/wifi/wifiManager.h"
+#include "network/udp/udpManager.h"
+#include "network/websocket/websocketManager.h"
+#include "core/tasks.h"
+#include "drivers/ledManager.h"
 
 void setup()
 {
   Serial.begin(115200);
-  delay(2000);
-  LOG_INFO("ESP32 Starting...");
+  LOG_INFO("ESP32 gateway starting...");
 
-  // WIFI and websocket setup
-  if (setupNetwork())
+  if (connectToHotspot(sta_ssid, sta_password, 100000))
   {
-    setupWebSocket();
-    gatewayUdpInit();
+    udpInit();
+    webSocketInit();
+  }
+  else
+  {
+    LOG_ERROR("Connect to hotspot failed");
+    while (true)
+      ;
   }
 
-  testGameGatewaySetup();
-  ledInit(builtInLed, BUILTIN_LED);
-  ledInit(buttonLed, BUTTON_LED);
+  ledInitAll();
+
+  startTasks();
 }
 
 void loop()
 {
-  webSocketLoop();
-  ledHandle(builtInLed);
-  ledHandle(buttonLed);
-  gatewayUdpLoop();
 
-  handleGame(&espTestGameGateway.base);
+  // static unsigned long last = 0;
 
-  static unsigned long last = 0;
+  // if (millis() - last > 2000)
+  // {
+  //   last = millis();
 
-  if (millis() - last > 2000)
-  {
-    // for testing
-    last = millis();
-    // ledBlink();
-    // broadcastDebug();
-  }
+  // }
 }
+
+// TOOD
+// make wifi logic, connect to hotspot in setup
+// make ws logic, make ws task and queue

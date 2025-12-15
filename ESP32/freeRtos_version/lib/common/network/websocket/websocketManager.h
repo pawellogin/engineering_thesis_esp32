@@ -1,10 +1,13 @@
 #pragma once
+#pragma once
 #include <ArduinoJson.h>
 #include <Arduino.h>
-#include "debug.h"
+
+extern QueueHandle_t wsCommandQueue;
 
 enum class WebMessageType
 {
+    UNKNOWN,
     COMMAND,
     STATUS,
     // EVENT,
@@ -13,6 +16,7 @@ enum class WebMessageType
 
 enum class WebMessageAction
 {
+    UNKNOWN,
     RESTART_ALL,
     RESTART_CLIENTS,
     RESTART_GATEWAY,
@@ -36,11 +40,16 @@ struct WebMessageDTO
     unsigned long timestamp; // optional, set with millis()
 };
 
-String serializeWebMessage(const WebMessageDTO &msg);
-bool deserializeWebMessage(const uint8_t *payload, size_t length, WebMessageDTO &msg);
+String serializeMessage(const WebMessageDTO &msg);
+bool deserializeMessage(const uint8_t *payload, size_t length, WebMessageDTO &msg);
 
 String actionToString(WebMessageAction action);
 String typeToString(WebMessageType type);
 
-// WebMessageType typeFromString(const String &typeStr);
-// WebMessageAction actionFromString(const String &actionStr);
+void webSocketInit();
+void webSocketLoop();
+void wsSendMessage(const WebMessageDTO &msg);
+
+void websocketTask(void *p);
+
+void wsCommandTask(void *p);
