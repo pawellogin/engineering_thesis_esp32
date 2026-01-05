@@ -4,12 +4,15 @@
 #include "network/websocket/websocketManager.h"
 #include "drivers/ledManager.h"
 
-TaskHandle_t udpTaskHandle = NULL;
-TaskHandle_t websocketTaskHandle = NULL;
-TaskHandle_t ledTaskHandle = NULL;
-TaskHandle_t wsCommandTaskHandle = NULL;
+TaskHandle_t gatewayUdpTaskHandle = NULL;
+TaskHandle_t gatewayWebsocketTaskHandle = NULL;
+TaskHandle_t gatewayLedTaskHandle = NULL;
+TaskHandle_t gatewayWsCommandTaskHandle = NULL;
 
-void startTasks()
+TaskHandle_t clientUdpTaskHandle = NULL;
+TaskHandle_t clientLedTaskHandle = NULL;
+
+void startClientTasks()
 {
     xTaskCreate(
         udpTask,
@@ -17,7 +20,26 @@ void startTasks()
         2048,
         nullptr,
         2,
-        &udpTaskHandle);
+        &clientUdpTaskHandle);
+
+    xTaskCreate(
+        clientLedTask,
+        "clientLedTask",
+        2048,
+        nullptr,
+        2,
+        &clientLedTaskHandle);
+}
+
+void startGatewayTasks()
+{
+    xTaskCreate(
+        udpTask,
+        "udpTask",
+        2048,
+        nullptr,
+        2,
+        &gatewayUdpTaskHandle);
 
     xTaskCreate(
         websocketTask,
@@ -25,15 +47,15 @@ void startTasks()
         4096,
         nullptr,
         2,
-        &websocketTaskHandle);
+        &gatewayWebsocketTaskHandle);
 
     xTaskCreate(
-        ledTask,
-        "ledTask",
+        gatewayLedTask,
+        "gatewayLedTask",
         2048,
         nullptr,
         2,
-        &ledTaskHandle);
+        &gatewayLedTaskHandle);
 
     xTaskCreate(
         wsCommandTask,
@@ -41,5 +63,5 @@ void startTasks()
         4096,
         nullptr,
         2,
-        &wsCommandTaskHandle);
+        &gatewayWsCommandTaskHandle);
 }

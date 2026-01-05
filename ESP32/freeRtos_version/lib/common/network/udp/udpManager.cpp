@@ -3,6 +3,7 @@
 #include "core/config.h"
 
 WiFiUDP udp;
+QueueHandle_t udpCommandQueue;
 SemaphoreHandle_t udpMutex = NULL;
 
 /**
@@ -13,6 +14,9 @@ ClientInfo clients[max_clients];
 
 void udpInit()
 {
+    udpCommandQueue = xQueueCreate(16, sizeof(UdpMessageDTO));
+    configASSERT(udpCommandQueue);
+
     if (udp.begin(udp_port))
     {
         LOG_INFO("UDP Listening on port %d\n", udp_port);
@@ -62,12 +66,8 @@ void udpHandlePacket()
             switch (msg.type)
             {
             case UdpMessageType::COMMAND:
-                // proccessClientCommand(msg, ip);
-                // TODO
-                LOG_INFO("udp message commands");
+                xQueueSend(udpCommandQueue, &msg, 0);
                 break;
-            // case UdpMessageType::STATUS:
-            case UdpMessageType::ERROR:
             default:
                 break;
             }
@@ -277,7 +277,6 @@ void udpTask(void *p)
 {
     while (true)
     {
-
         udpHandlePacket();
         vTaskDelay(10 / portTICK_PERIOD_MS); // small delay to yield CPU
     }

@@ -1,3 +1,4 @@
 #pragma once
 
-void startTasks();
+void startGatewayTasks();
+void startClientTasks();

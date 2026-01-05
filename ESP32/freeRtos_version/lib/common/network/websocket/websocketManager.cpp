@@ -81,13 +81,20 @@ bool deserializeWebMessage(const uint8_t *payload, size_t length, WebMessageDTO 
     if (!doc["data"].isNull())
     {
         String temp;
-        serializeJson(doc["data"], temp); // get raw string representation
-        msg.data = temp;
+        serializeJson(doc["data"], temp);
+
+        strncpy(msg.data, temp.c_str(), WS_DATA_MAX - 1);
+        msg.data[WS_DATA_MAX - 1] = '\0';
+
+        if (temp.length() >= WS_DATA_MAX)
+        {
+            LOG_INFO("WebSocket data truncated to %d bytes", WS_DATA_MAX - 1);
+        }
     }
     else
     {
         LOG_INFO("Missing 'data' property in web msg json");
-        msg.data = "";
+        msg.data[0] = '\0';
     }
 
     msg.timestamp = doc["timestamp"] | millis();
@@ -105,7 +112,7 @@ String serializeWebMessage(const WebMessageDTO &msg)
     doc["type"] = typeToString(msg.type);
     doc["action"] = actionToString(msg.action);
 
-    if (msg.data.length() > 0)
+    if (msg.data[0] != '\0')
     {
         JsonDocument dataDoc;
         DeserializationError err = deserializeJson(dataDoc, msg.data);
@@ -309,7 +316,10 @@ void wsCommandTask(void *p)
 
     while (true)
     {
-        if (xQueueReceive(wsCommandQueue, &msg, portMAX_DELAY))
+        if (wsCommandQueue == NULL)
+        {
+        }
+        else if (xQueueReceive(wsCommandQueue, &msg, portMAX_DELAY))
         {
             processWebsocketCommand(msg);
         }

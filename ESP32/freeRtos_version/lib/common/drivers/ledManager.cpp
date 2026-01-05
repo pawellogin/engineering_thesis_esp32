@@ -14,7 +14,16 @@ void ledInit(LedController &led, uint8_t pin)
     digitalWrite(pin, LOW);
 }
 
-void ledInitAll()
+void gatewayLedInitAll()
+{
+    ledMutex = xSemaphoreCreateMutex();
+    configASSERT(ledMutex);
+
+    ledInit(builtInLed, BUILTIN_LED);
+    // ledInit(buttonLed, BUTTON_LED_PIN);
+}
+
+void clientLedInitAll()
 {
     ledMutex = xSemaphoreCreateMutex();
     configASSERT(ledMutex);
@@ -42,7 +51,19 @@ void ledHandle(LedController &led)
     }
 }
 
-void ledTask(void *p)
+void gatewayLedTask(void *p)
+{
+    while (true)
+    {
+        xSemaphoreTake(ledMutex, portMAX_DELAY);
+        ledHandle(builtInLed);
+        xSemaphoreGive(ledMutex);
+
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+}
+
+void clientLedTask(void *p)
 {
     while (true)
     {

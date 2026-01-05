@@ -24,9 +24,9 @@ void setup()
       ;
   }
 
-  ledInitAll();
+  gatewayLedInitAll();
 
-  startTasks();
+  startGatewayTasks();
 }
 
 void loop()

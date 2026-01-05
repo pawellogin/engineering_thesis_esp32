@@ -2,6 +2,7 @@
 #pragma once
 #include <ArduinoJson.h>
 #include <Arduino.h>
+#include "core/config.h"
 
 extern QueueHandle_t wsCommandQueue;
 
@@ -32,11 +33,12 @@ enum class WebMessageAction
 /*
 Message is for transfering data between Web and gateway using websocket
 */
+
 struct WebMessageDTO
 {
     WebMessageType type;
     WebMessageAction action;
-    String data;             // raw JSON string or text
+    char data[WS_DATA_MAX];  // raw JSON string or text
     unsigned long timestamp; // optional, set with millis()
 };
 

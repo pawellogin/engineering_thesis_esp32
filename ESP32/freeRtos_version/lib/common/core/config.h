@@ -40,6 +40,8 @@ inline const char ota_password[] = "ota_password";
 inline const IPAddress gatewayIp(192, 168, 137, 1);
 inline const IPAddress subnetIp(255, 255, 255, 0);
 
+#define WS_DATA_MAX 256
+
 // =====================
 // UDP Config
 // =====================

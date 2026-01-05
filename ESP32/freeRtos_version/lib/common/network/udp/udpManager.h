@@ -2,6 +2,7 @@
 #include "WiFi.h"
 
 extern WiFiUDP udp;
+extern QueueHandle_t udpCommandQueue;
 
 struct ClientInfo
 {

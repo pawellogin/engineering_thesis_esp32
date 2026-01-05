@@ -12,8 +12,11 @@ struct LedController
 extern LedController builtInLed;
 extern LedController buttonLed;
 
-void ledInitAll();
+void gatewayLedInitAll();
+void clientLedInitAll();
+
 void ledBlink(LedController &led, unsigned long durationMs = 200);
 void ledHandle(LedController &led);
 
-void ledTask(void *p);
+void gatewayLedTask(void *p);
+void clientLedTask(void *p);
