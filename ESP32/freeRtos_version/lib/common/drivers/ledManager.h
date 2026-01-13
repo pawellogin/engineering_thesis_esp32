@@ -12,10 +12,13 @@ struct LedController
 extern LedController builtInLed;
 extern LedController buttonLed;
 
+extern SemaphoreHandle_t gatewayLedMutex;
+extern SemaphoreHandle_t clientLedMutex;
+
 void gatewayLedInitAll();
 void clientLedInitAll();
 
-void ledBlink(LedController &led, unsigned long durationMs = 200);
+void ledBlink(LedController &led, SemaphoreHandle_t mutex, unsigned long durationMs = 200);
 void ledHandle(LedController &led);
 
 void gatewayLedTask(void *p);

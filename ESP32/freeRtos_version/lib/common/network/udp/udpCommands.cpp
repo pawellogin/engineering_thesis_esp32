@@ -1,0 +1,26 @@
+#include "udpCommands.h"
+#include "udpManager.h"
+#include "core/debug.h"
+
+void udpBlinkAllClientsBuiltInLed()
+{
+    UdpMessageDTO msg;
+    msg.action = UdpMessageAction::BLINK_BUILTIN_LED;
+    msg.type = UdpMessageType::COMMAND;
+    msg.data[0] = '\0';
+    msg.timestamp = millis();
+
+    char out[UDP_DATA_MAX];
+    size_t len;
+
+    bool ok = serializeUdpMessage(msg, out, sizeof(out), len);
+
+    if (!ok)
+    {
+        LOG_ERROR("serialization error in udpBlinkAllClientsBuiltInLed");
+    }
+    else
+    {
+        udpSendAllClients(out);
+    }
+}

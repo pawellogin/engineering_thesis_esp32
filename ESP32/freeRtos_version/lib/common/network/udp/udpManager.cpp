@@ -1,16 +1,26 @@
 #include "network/udp/udpManager.h"
 #include "core/debug.h"
 #include "core/config.h"
+#include "drivers/ledManager.h"
+#include <ESPmDNS.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic error "-Wswitch-enum"
 
 WiFiUDP udp;
 QueueHandle_t udpCommandQueue;
 SemaphoreHandle_t udpMutex = NULL;
 
 /**
- * Remember to use this only in this file and not in multiple tasks
+ * Remember to use incomingPacket only in this file and not in multiple tasks
  */
 char incomingPacket[255];
 ClientInfo clients[max_clients];
+
+/**
+ * right now this is not used, probably remove
+ */
+IPAddress dynamicGatewayIp;
 
 void udpInit()
 {
@@ -33,11 +43,23 @@ void udpInit()
     else
     {
         LOG_INFO("UDP Failed to start.");
+        while (1)
+            ;
     }
+
+    // discoverIPFromMDNS(mDNS_hostname, wifi_timeout);
 }
 
 void udpHandlePacket()
 {
+    IPAddress localIp = WiFi.localIP();
+    IPAddress ip = udp.remoteIP();
+
+    if (ip == localIp)
+    {
+        return; // ignore own packets
+    }
+
     int packetSize = udp.parsePacket();
     if (packetSize)
     {
@@ -45,12 +67,18 @@ void udpHandlePacket()
         if (len > 0)
             incomingPacket[len] = '\0';
 
-        IPAddress ip = udp.remoteIP();
-
         UdpMessageDTO msg;
         bool deserializeResult = deserializeUdpMessage((uint8_t *)incomingPacket, len, msg);
 
-        ClientRegisterResult registerResult = registerClient(ip, (uint8_t)msg.data.toInt());
+        LOG_INFO("UDP RX from %s, action=%d, ts=%lu", ip.toString().c_str(), (int)msg.action, msg.timestamp);
+
+        if (!deserializeResult)
+        {
+            LOG_ERROR("deserializeUdpMessage failed");
+            return;
+        }
+
+        ClientRegisterResult registerResult = registerClient(ip, (uint8_t)atoi(msg.data));
 
         if (registerResult == ClientRegisterResult::NEW_REGISTERED)
         {
@@ -60,7 +88,6 @@ void udpHandlePacket()
 
         LOG_INFO("UDP Received from %s: %s\n", ip.toString().c_str(), incomingPacket);
 
-        // TODO change this to use freeRtos queue
         if (deserializeResult)
         {
             switch (msg.type)
@@ -68,7 +95,10 @@ void udpHandlePacket()
             case UdpMessageType::COMMAND:
                 xQueueSend(udpCommandQueue, &msg, 0);
                 break;
+            case UdpMessageType::UNKNOWN:
+            case UdpMessageType::ERROR:
             default:
+                LOG_ERROR("UNKNOWN or ERROR or missing udp msg type");
                 break;
             }
         }
@@ -184,6 +214,7 @@ static String actionToString(UdpMessageAction action)
         return "test_game_end";
     case UdpMessageAction::PING:
         return "ping";
+    case UdpMessageAction::UNKNOWN:
     default:
         LOG_ERROR("Missing actionToString conversion");
         return "unknown";
@@ -200,79 +231,119 @@ static String typeToString(UdpMessageType type)
         return "error";
     // case UdpMessageType::STATUS:
     //     return "status";
+    case UdpMessageType::UNKNOWN:
     default:
         LOG_ERROR("Missing typeToString conversion");
         return "unknown";
     }
 }
 
-String serializeUdpMessage(const UdpMessageDTO &msg)
+/*
+ * outSize is the maximum size a serialized message can be
+ * outlEN is actual size of serialized message
+ */
+bool serializeUdpMessage(
+    const UdpMessageDTO &msg,
+    char *out,
+    size_t outSize,
+    size_t &outLen)
 {
-    JsonDocument doc;
+    StaticJsonDocument<256> doc;
+
     doc["type"] = typeToString(msg.type);
     doc["action"] = actionToString(msg.action);
-
-    if (msg.data.length() > 0)
-    {
-        JsonDocument dataDoc;
-        DeserializationError err = deserializeJson(dataDoc, msg.data);
-        if (!err)
-            doc["data"] = dataDoc;
-        else
-            doc["data"] = msg.data;
-    }
-
     doc["timestamp"] = msg.timestamp;
 
-    String json;
-    serializeJson(doc, json);
-    return json;
+    if (msg.data[0] != '\0')
+    {
+        doc["data"] = msg.data;
+    }
+
+    outLen = serializeJson(doc, out, outSize);
+    return outLen > 0 && outLen < outSize;
 }
 
 bool deserializeUdpMessage(const uint8_t *payload, size_t length, UdpMessageDTO &msg)
 {
-    JsonDocument doc;
+    StaticJsonDocument<256> doc;
+
     DeserializationError error = deserializeJson(doc, payload, length);
     if (error)
     {
-        LOG_ERROR("Invalid JSON in udp message");
-        String raw = String((const char *)payload).substring(0, length);
-        LOG_ERROR("Raw JSON: %s", raw.c_str());
+        LOG_ERROR("Invalid JSON in UDP message");
+        // Safe logging: copy a small portion of payload
+        char tmp[UDP_DATA_MAX];
+        size_t logLen = length < sizeof(tmp) - 1 ? length : sizeof(tmp) - 1;
+        memcpy(tmp, payload, logLen);
+        tmp[logLen] = '\0';
+        LOG_ERROR("Raw JSON: %s", tmp);
         return false;
     }
 
     if (doc["type"].is<const char *>())
     {
-        msg.type = typeFromString(doc["type"].as<String>());
+        const char *typeStr = doc["type"];
+        msg.type = typeFromString(typeStr);
     }
     else
     {
-        LOG_INFO("Missing 'type' property in json");
+        LOG_ERROR("Missing or invalid 'type' property");
+        msg.type = UdpMessageType::UNKNOWN;
     }
 
     if (doc["action"].is<const char *>())
     {
-        msg.action = actionFromString(doc["action"].as<String>());
+        const char *actionStr = doc["action"];
+        msg.action = actionFromString(actionStr);
     }
     else
     {
-        LOG_INFO("Missing 'action' property in json");
+        LOG_ERROR("Missing or invalid 'action' property");
+        msg.action = UdpMessageAction::UNKNOWN;
     }
 
-    // TODO handle this better, rn if we have number in json this do not work correct
     if (!doc["data"].isNull())
     {
-        msg.data = String(doc["data"].as<String>());
+        if (doc["data"].is<const char *>())
+        {
+            strlcpy(msg.data, doc["data"], sizeof(msg.data));
+        }
+        else if (doc["data"].is<long>() || doc["data"].is<int>())
+        {
+            snprintf(msg.data, sizeof(msg.data), "%ld", doc["data"].as<long>());
+        }
+        else if (doc["data"].is<float>() || doc["data"].is<double>())
+        {
+            snprintf(msg.data, sizeof(msg.data), "%.6f", doc["data"].as<double>());
+        }
+        else
+        {
+            LOG_ERROR("Unsupported 'data' type, clearing field");
+            msg.data[0] = '\0';
+        }
+
+        if (strlen(msg.data) >= sizeof(msg.data) - 1)
+        {
+            LOG_ERROR("'data' field truncated to %d bytes", sizeof(msg.data) - 1);
+        }
     }
     else
     {
-        msg.data = "NO DATA ERROR";
+        msg.data[0] = '\0'; // no data
     }
 
-    msg.timestamp = doc["timestamp"] | millis();
+    if (doc["timestamp"].is<unsigned long>())
+    {
+        msg.timestamp = doc["timestamp"];
+    }
+    else
+    {
+        LOG_ERROR("Missing or invalid 'timestamp', using millis()");
+        msg.timestamp = millis();
+    }
+
     return true;
 }
-
 void udpTask(void *p)
 {
     while (true)
@@ -281,3 +352,129 @@ void udpTask(void *p)
         vTaskDelay(10 / portTICK_PERIOD_MS); // small delay to yield CPU
     }
 }
+
+void udpProccessCommand(const UdpMessageDTO &msg)
+{
+    switch (msg.action)
+    {
+        // TODO maybe make separate action for gateway and clients restart
+    case UdpMessageAction::RESTART_ALL:
+        // gatewayUtilsRestartClients();
+        restartESP();
+        break;
+    case UdpMessageAction::BLINK_BUILTIN_LED:
+        ledBlink(builtInLed, clientLedMutex);
+        break;
+    case UdpMessageAction::REGISTRATION_ACK:
+    case UdpMessageAction::PING:
+    case UdpMessageAction::TEST_GAME_START:
+    case UdpMessageAction::TEST_GAME_STATUS:
+    case UdpMessageAction::TEST_GAME_END:
+        break;
+    case UdpMessageAction::UNKNOWN:
+    default:
+        LOG_ERROR("Unknown command action");
+        break;
+    }
+}
+
+void udpCommandTask(void *p)
+{
+    UdpMessageDTO msg;
+
+    while (true)
+    {
+        msg.action = UdpMessageAction::UNKNOWN;
+
+        auto a = xQueueReceive(udpCommandQueue, &msg, portMAX_DELAY);
+
+        LOG_INFO("queue recive %d", a);
+
+        LOG_INFO("action: %d, time: %d", msg.action, msg.timestamp);
+
+        udpProccessCommand(msg);
+
+        // if (xQueueReceive(udpCommandQueue, &msg, portMAX_DELAY) == pdTRUE)
+        // {
+        //     // TODO add function to process the type, and then inside it the action
+        //     udpProccessCommand(msg);
+        // }
+    }
+}
+
+void udpSend(IPAddress ip, const char *msg)
+{
+    udp.beginPacket(ip, udp_port);
+    udp.print(msg);
+    udp.endPacket();
+    LOG_INFO("UDP Sent to %s: %s\n", ip.toString().c_str(), msg);
+}
+
+void udpSendAllClients(const char *msg)
+{
+    for (size_t i = 0; i < max_clients; ++i)
+    {
+        if (clients[i].connected)
+        {
+            udpSend(clients[i].ip, msg);
+        }
+    }
+}
+
+void updClientSendDiscoverPingTask(void *p)
+{
+    UdpMessageDTO msg;
+
+    while (true)
+    {
+
+        msg.action = UdpMessageAction::PING;
+        msg.data[0] = '\0';
+        msg.timestamp = millis();
+        msg.type = UdpMessageType::COMMAND;
+
+        char out[256];
+        size_t len;
+
+        bool ok = serializeUdpMessage(msg, out, sizeof(out), len);
+
+        if (!ok)
+        {
+            LOG_ERROR("serialization error in updClientSendDiscoverPing ");
+        }
+        else
+        {
+            udpSend(gatewayIp, out);
+        }
+        vTaskDelay(1000 * 5 / portTICK_PERIOD_MS); // small delay to yield CPU
+    }
+}
+
+IPAddress discoverIPFromMDNS(const char *hostname, unsigned long timeoutMs)
+{
+
+    LOG_INFO("Looking for gateway: %s.local", hostname);
+
+    IPAddress gIP;
+    unsigned long start = millis();
+
+    while (gIP.toString() == "0.0.0.0" && millis() - start < timeoutMs)
+    {
+        gIP = MDNS.queryHost(hostname);
+        delay(500);
+    }
+
+    if (gIP.toString() != "0.0.0.0")
+    {
+        LOG_INFO("Gateway found: %s -> %s",
+                 hostname, gIP.toString().c_str());
+    }
+    else
+    {
+        LOG_ERROR("Failed to resolve gateway: %s.local", hostname);
+    }
+
+    return gIP;
+}
+
+#pragma GCC diagnostic pop

@@ -37,7 +37,8 @@ inline const char ota_password[] = "ota_password";
 // =====================
 // Network Config
 // =====================
-inline const IPAddress gatewayIp(192, 168, 137, 1);
+inline const IPAddress staticIp(192, 168, 137, 100 + BOARD_ID);
+inline const IPAddress gatewayIp(192, 168, 137, 101);
 inline const IPAddress subnetIp(255, 255, 255, 0);
 
 #define WS_DATA_MAX 256

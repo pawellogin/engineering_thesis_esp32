@@ -2,7 +2,8 @@
 #include "core/config.h"
 #include "core/debug.h"
 
-SemaphoreHandle_t ledMutex;
+SemaphoreHandle_t gatewayLedMutex;
+SemaphoreHandle_t clientLedMutex;
 LedController builtInLed;
 LedController buttonLed;
 
@@ -16,8 +17,8 @@ void ledInit(LedController &led, uint8_t pin)
 
 void gatewayLedInitAll()
 {
-    ledMutex = xSemaphoreCreateMutex();
-    configASSERT(ledMutex);
+    gatewayLedMutex = xSemaphoreCreateMutex();
+    configASSERT(gatewayLedMutex);
 
     ledInit(builtInLed, BUILTIN_LED);
     // ledInit(buttonLed, BUTTON_LED_PIN);
@@ -25,29 +26,35 @@ void gatewayLedInitAll()
 
 void clientLedInitAll()
 {
-    ledMutex = xSemaphoreCreateMutex();
-    configASSERT(ledMutex);
+    clientLedMutex = xSemaphoreCreateMutex();
+    configASSERT(clientLedMutex);
 
     ledInit(builtInLed, BUILTIN_LED);
     // ledInit(buttonLed, BUTTON_LED_PIN);
 }
 
-void ledBlink(LedController &led, unsigned long durationMs)
+void ledBlink(LedController &led, SemaphoreHandle_t mutex, unsigned long durationMs)
 {
-    xSemaphoreTake(ledMutex, portMAX_DELAY);
+    xSemaphoreTake(mutex, portMAX_DELAY);
     led.duration = durationMs;
     led.previousMillis = millis();
     led.active = true;
     digitalWrite(led.pin, HIGH);
-    xSemaphoreGive(ledMutex);
+    xSemaphoreGive(mutex);
 }
 
 void ledHandle(LedController &led)
 {
+
     if (led.active && millis() - led.previousMillis >= led.duration)
     {
         led.active = false;
         digitalWrite(led.pin, LOW);
+        // LOG_INFO("led turn off");
+    }
+    else
+    {
+        // LOG_INFO("active %d, milis %d, prevoous %d, duration %d", led.active, millis(), led.previousMillis, led.duration);
     }
 }
 
@@ -55,11 +62,11 @@ void gatewayLedTask(void *p)
 {
     while (true)
     {
-        xSemaphoreTake(ledMutex, portMAX_DELAY);
+        xSemaphoreTake(gatewayLedMutex, portMAX_DELAY);
         ledHandle(builtInLed);
-        xSemaphoreGive(ledMutex);
+        xSemaphoreGive(gatewayLedMutex);
 
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(10 / portTICK_PERIOD_MS); // small delay to yield CPU
     }
 }
 
@@ -67,10 +74,10 @@ void clientLedTask(void *p)
 {
     while (true)
     {
-        xSemaphoreTake(ledMutex, portMAX_DELAY);
+        xSemaphoreTake(clientLedMutex, portMAX_DELAY);
         ledHandle(builtInLed);
-        xSemaphoreGive(ledMutex);
+        xSemaphoreGive(clientLedMutex);
 
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(10 / portTICK_PERIOD_MS); // small delay to yield CPU
     }
 }

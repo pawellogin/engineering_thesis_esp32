@@ -12,7 +12,7 @@ void setup()
     Serial.begin(115200);
     LOG_INFO("ESP32 client starting...");
 
-    if (connectToHotspot(sta_ssid, sta_password, 100000))
+    if (connectToHotspot(sta_ssid, sta_password, wifi_timeout))
     {
         udpInit();
     }
@@ -25,7 +25,7 @@ void setup()
 
     clientLedInitAll();
 
-    startGatewayTasks();
+    startClientTasks();
 }
 
 void loop()

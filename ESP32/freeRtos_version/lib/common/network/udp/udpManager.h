@@ -57,21 +57,37 @@ enum class UdpMessageAction
 /*
 UdpMessage is for transfering data between client and gateway
 */
+#define UDP_DATA_MAX 256
+
 struct UdpMessageDTO
 {
     UdpMessageType type;
     UdpMessageAction action;
-    String data;             // raw JSON string or text
+    char data[UDP_DATA_MAX]; // raw JSON string or text
     unsigned long timestamp; // optional, set with millis()
 };
 
-String serializeUdpMessage(const UdpMessageDTO &msg);
+/*
+ * outSize is the maximum size a serialized message can be
+ * outlEN is actual size of serialized message
+ */
+bool serializeUdpMessage(const UdpMessageDTO &msg, char *out, size_t outSize, size_t &outLen);
 bool deserializeUdpMessage(const uint8_t *payload, size_t length, UdpMessageDTO &msg);
 
 void udpInit();
 
-void udpSendAll(const char *msg);
+void udpSend(IPAddress ip, const char *msg);
+
+void udpSendAllClients(const char *msg);
 
 void udpHandlePacket();
 
 void udpTask(void *p);
+
+void udpProccessCommand(const UdpMessageDTO &msg);
+
+void udpCommandTask(void *p);
+
+void updClientSendDiscoverPingTask(void *p);
+
+IPAddress discoverIPFromMDNS(const char *hostname, unsigned long timeoutMs);

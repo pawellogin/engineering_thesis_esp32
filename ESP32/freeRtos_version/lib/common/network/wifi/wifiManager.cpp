@@ -8,7 +8,7 @@ IPAddress getStaticIP()
     return IPAddress(192, 168, 137, 100 + BOARD_ID);
 }
 
-IPAddress getGateway()
+IPAddress getHotspot()
 {
     return IPAddress(192, 168, 137, 1);
 }
@@ -21,7 +21,7 @@ IPAddress getSubnet()
 bool connectToHotspot(const char *ssid, const char *password, unsigned long timeoutMs)
 {
 
-    WiFi.config(getStaticIP(), getGateway(), getSubnet());
+    WiFi.config(getStaticIP(), getHotspot(), getSubnet());
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
 

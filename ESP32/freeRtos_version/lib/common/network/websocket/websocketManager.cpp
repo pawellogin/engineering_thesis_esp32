@@ -2,6 +2,7 @@
 #include "core/debug.h"
 #include "network/websocket/websocketManager.h"
 #include "drivers/ledManager.h"
+#include "network/udp/udpCommands.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic error "-Wswitch-enum"
@@ -180,7 +181,6 @@ static uint8_t adminClientId = 255;
 
 static void processWebsocketCommand(const WebMessageDTO &msg)
 {
-
     switch (msg.action)
     {
         // TODO maybe make separate action for gateway and clients restart
@@ -196,11 +196,11 @@ static void processWebsocketCommand(const WebMessageDTO &msg)
         break;
     case WebMessageAction::BLINK_CLIENTS_LED:
         // LOG_INFO("BLINK_CLIENTS_LED command received");
-        // gatewayUtilsBlinkClientsLed();
+        udpBlinkAllClientsBuiltInLed();
         break;
     case WebMessageAction::BLINK_GATEWAY_LED:
         // LOG_INFO("BLINK_GATEWAY_LED command received");
-        ledBlink(builtInLed);
+        ledBlink(builtInLed, gatewayLedMutex);
         break;
     case WebMessageAction::PING:
         break;
@@ -284,6 +284,9 @@ void webSocketInit()
     LOG_INFO("WebSocket server started on port %d", ws_port);
 }
 
+/*
+ * For code that executes in loop search webSocketEvent
+ */
 void webSocketLoop()
 {
     if (webSocket)
@@ -319,8 +322,9 @@ void wsCommandTask(void *p)
         if (wsCommandQueue == NULL)
         {
         }
-        else if (xQueueReceive(wsCommandQueue, &msg, portMAX_DELAY))
+        else if (xQueueReceive(wsCommandQueue, &msg, portMAX_DELAY) == pdTRUE)
         {
+            // TODO add fucntion to procces the type, and then inside it the action
             processWebsocketCommand(msg);
         }
     }
