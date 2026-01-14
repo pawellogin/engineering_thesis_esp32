@@ -10,3 +10,7 @@ IPAddress getHotspot();
 IPAddress getSubnet();
 
 bool connectToHotspot(const char *ssid, const char *password, unsigned long timeoutMs);
+
+void wifiTask(void *p);
+
+void wifiInit();

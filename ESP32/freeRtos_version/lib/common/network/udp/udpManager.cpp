@@ -3,12 +3,12 @@
 #include "core/config.h"
 #include "drivers/ledManager.h"
 #include <ESPmDNS.h>
+#include "system/systemContext.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic error "-Wswitch-enum"
 
 WiFiUDP udp;
-QueueHandle_t udpCommandQueue;
 SemaphoreHandle_t udpMutex = NULL;
 
 /**
@@ -24,30 +24,22 @@ IPAddress dynamicGatewayIp;
 
 void udpInit()
 {
-    udpCommandQueue = xQueueCreate(16, sizeof(UdpMessageDTO));
-    configASSERT(udpCommandQueue);
-
     if (udp.begin(udp_port))
     {
         LOG_INFO("UDP Listening on port %d\n", udp_port);
 
         udpMutex = xSemaphoreCreateMutex();
-        if (udpMutex == NULL)
-        {
-            LOG_ERROR("Fatal error - no heap");
-            while (true)
-            {
-            }
-        }
+        configASSERT(udpMutex);
+
+        xEventGroupSetBits(sys.systemEvents, SYS_UDP_READY);
     }
     else
     {
-        LOG_INFO("UDP Failed to start.");
-        while (1)
-            ;
+        LOG_ERROR("UDP Failed to start.");
+        while (true)
+        {
+        }
     }
-
-    // discoverIPFromMDNS(mDNS_hostname, wifi_timeout);
 }
 
 void udpHandlePacket()
@@ -70,7 +62,7 @@ void udpHandlePacket()
         UdpMessageDTO msg;
         bool deserializeResult = deserializeUdpMessage((uint8_t *)incomingPacket, len, msg);
 
-        LOG_INFO("UDP RX from %s, action=%d, ts=%lu", ip.toString().c_str(), (int)msg.action, msg.timestamp);
+        // LOG_INFO("UDP RX from %s, action=%d, ts=%lu", ip.toString().c_str(), (int)msg.action, msg.timestamp);
 
         if (!deserializeResult)
         {
@@ -93,7 +85,7 @@ void udpHandlePacket()
             switch (msg.type)
             {
             case UdpMessageType::COMMAND:
-                xQueueSend(udpCommandQueue, &msg, 0);
+                xQueueSend(sys.udpCommandQueue, &msg, 0);
                 break;
             case UdpMessageType::UNKNOWN:
             case UdpMessageType::ERROR:
@@ -116,7 +108,7 @@ ClientRegisterResult registerClient(IPAddress ip, uint8_t boardId)
         {
             if (clients[i].ip == ip)
             {
-                clients[i].lastSeen = now - clients[i].lastSeen;
+                clients[i].lastSeen = now;
                 return ClientRegisterResult::ALREADY_REGISTERED;
             }
         }
@@ -344,12 +336,20 @@ bool deserializeUdpMessage(const uint8_t *payload, size_t length, UdpMessageDTO 
 
     return true;
 }
+
 void udpTask(void *p)
 {
     while (true)
     {
+        xEventGroupWaitBits(
+            sys.systemEvents,
+            SYS_UDP_READY,
+            pdFALSE,
+            pdTRUE,
+            portMAX_DELAY);
+
         udpHandlePacket();
-        vTaskDelay(10 / portTICK_PERIOD_MS); // small delay to yield CPU
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
@@ -363,7 +363,7 @@ void udpProccessCommand(const UdpMessageDTO &msg)
         restartESP();
         break;
     case UdpMessageAction::BLINK_BUILTIN_LED:
-        ledBlink(builtInLed, clientLedMutex);
+        ledBlink(builtInLed);
         break;
     case UdpMessageAction::REGISTRATION_ACK:
     case UdpMessageAction::PING:
@@ -380,30 +380,35 @@ void udpProccessCommand(const UdpMessageDTO &msg)
 
 void udpCommandTask(void *p)
 {
-    UdpMessageDTO msg;
-
     while (true)
     {
+        xEventGroupWaitBits(
+            sys.systemEvents,
+            SYS_UDP_READY,
+            pdFALSE,
+            pdTRUE,
+            portMAX_DELAY);
+
+        UdpMessageDTO msg;
+
         msg.action = UdpMessageAction::UNKNOWN;
 
-        auto a = xQueueReceive(udpCommandQueue, &msg, portMAX_DELAY);
-
-        LOG_INFO("queue recive %d", a);
-
-        LOG_INFO("action: %d, time: %d", msg.action, msg.timestamp);
-
-        udpProccessCommand(msg);
-
-        // if (xQueueReceive(udpCommandQueue, &msg, portMAX_DELAY) == pdTRUE)
-        // {
-        //     // TODO add function to process the type, and then inside it the action
-        //     udpProccessCommand(msg);
-        // }
+        if (xQueueReceive(sys.udpCommandQueue, &msg, portMAX_DELAY) == pdTRUE)
+        {
+            udpProccessCommand(msg);
+        }
     }
 }
 
 void udpSend(IPAddress ip, const char *msg)
 {
+    xEventGroupWaitBits(
+        sys.systemEvents,
+        SYS_UDP_READY,
+        pdFALSE,
+        pdTRUE,
+        portMAX_DELAY);
+
     udp.beginPacket(ip, udp_port);
     udp.print(msg);
     udp.endPacket();
@@ -452,6 +457,12 @@ void updClientSendDiscoverPingTask(void *p)
 
 IPAddress discoverIPFromMDNS(const char *hostname, unsigned long timeoutMs)
 {
+    xEventGroupWaitBits(
+        sys.systemEvents,
+        SYS_WIFI_READY,
+        pdFALSE,
+        pdTRUE,
+        portMAX_DELAY);
 
     LOG_INFO("Looking for gateway: %s.local", hostname);
 

@@ -1,10 +1,7 @@
 #pragma once
-#pragma once
 #include <ArduinoJson.h>
 #include <Arduino.h>
 #include "core/config.h"
-
-extern QueueHandle_t wsCommandQueue;
 
 enum class WebMessageType
 {

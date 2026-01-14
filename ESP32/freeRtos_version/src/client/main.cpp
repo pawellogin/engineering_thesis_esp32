@@ -6,25 +6,18 @@
 #include "network/websocket/websocketManager.h"
 #include "core/tasks.h"
 #include "drivers/ledManager.h"
+#include "system/systemContext.h"
 
 void setup()
 {
     Serial.begin(115200);
     LOG_INFO("ESP32 client starting...");
 
-    if (connectToHotspot(sta_ssid, sta_password, wifi_timeout))
-    {
-        udpInit();
-    }
-    else
-    {
-        LOG_ERROR("Connect to hotspot failed");
-        while (true)
-            ;
-    }
+    systemContextInit();
+
+    wifiInit();
 
     clientLedInitAll();
-
     startClientTasks();
 }
 

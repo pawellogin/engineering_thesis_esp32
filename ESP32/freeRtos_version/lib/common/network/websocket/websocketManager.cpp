@@ -3,11 +3,10 @@
 #include "network/websocket/websocketManager.h"
 #include "drivers/ledManager.h"
 #include "network/udp/udpCommands.h"
+#include "system/systemContext.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic error "-Wswitch-enum"
-
-QueueHandle_t wsCommandQueue;
 
 static WebMessageType typeFromString(const String &typeStr)
 {
@@ -200,7 +199,7 @@ static void processWebsocketCommand(const WebMessageDTO &msg)
         break;
     case WebMessageAction::BLINK_GATEWAY_LED:
         // LOG_INFO("BLINK_GATEWAY_LED command received");
-        ledBlink(builtInLed, gatewayLedMutex);
+        ledBlink(builtInLed);
         break;
     case WebMessageAction::PING:
         break;
@@ -239,10 +238,11 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
         WebMessageDTO msg;
         if (deserializeWebMessage(payload, length, msg))
         {
+            LOG_INFO("%d", msg.action);
             switch (msg.type)
             {
             case WebMessageType::COMMAND:
-                xQueueSend(wsCommandQueue, &msg, 0);
+                xQueueSend(sys.wsCommandQueue, &msg, 0);
                 break;
             case WebMessageType::STATUS:
             case WebMessageType::ERROR:
@@ -270,10 +270,6 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
 
 void webSocketInit()
 {
-
-    wsCommandQueue = xQueueCreate(16, sizeof(WebMessageDTO));
-    configASSERT(wsCommandQueue);
-
     if (webSocket != nullptr)
         delete webSocket;
 
@@ -282,6 +278,8 @@ void webSocketInit()
     webSocket->onEvent(webSocketEvent);
     // setDebugWebSocket(webSocket);
     LOG_INFO("WebSocket server started on port %d", ws_port);
+
+    xEventGroupSetBits(sys.systemEvents, SYS_WS_READY);
 }
 
 /*
@@ -315,15 +313,24 @@ void websocketTask(void *p)
 
 void wsCommandTask(void *p)
 {
+    LOG_INFO("1-wsCommandTask");
+    xEventGroupWaitBits(
+        sys.systemEvents,
+        SYS_WS_READY,
+        pdFALSE,
+        pdTRUE,
+        portMAX_DELAY);
+    LOG_INFO("2-wsCommandTask");
+
     WebMessageDTO msg;
 
     while (true)
     {
-        if (wsCommandQueue == NULL)
+
+        if (xQueueReceive(sys.wsCommandQueue, &msg, portMAX_DELAY) == pdTRUE)
         {
-        }
-        else if (xQueueReceive(wsCommandQueue, &msg, portMAX_DELAY) == pdTRUE)
-        {
+            LOG_INFO("3-wsCommandTask");
+
             // TODO add fucntion to procces the type, and then inside it the action
             processWebsocketCommand(msg);
         }

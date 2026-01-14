@@ -25,7 +25,8 @@ inline const char ap_password[] = "12345678";
 inline const char sta_ssid[] = "LENOVO20_4046";
 inline const char sta_password[] = "12341234";
 
-inline constexpr unsigned int wifi_timeout = 1000 * 3600; // ms
+// inline constexpr unsigned int wifi_timeout = 1000 * 3600; // ms
+inline constexpr unsigned int wifi_timeout_attempt = 1000 * 5; // 5s
 
 inline const char mDNS_hostname[] = "esp-gateway";
 

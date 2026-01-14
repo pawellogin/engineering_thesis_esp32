@@ -3,14 +3,17 @@
 #include "network/udp/udpManager.h"
 #include "network/websocket/websocketManager.h"
 #include "drivers/ledManager.h"
+#include "network/wifi/wifiManager.h"
 
 TaskHandle_t gatewayUdpTaskHandle = NULL;
 TaskHandle_t gatewayWebsocketTaskHandle = NULL;
 TaskHandle_t gatewayLedTaskHandle = NULL;
 TaskHandle_t gatewayWsCommandTaskHandle = NULL;
+TaskHandle_t gatewayWifiTaskHandle = NULL;
 
 TaskHandle_t clientUdpTaskHandle = NULL;
 TaskHandle_t clientLedTaskHandle = NULL;
+TaskHandle_t clientWifiTaskHandle = NULL;
 TaskHandle_t udpCommandTaskHandle = NULL;
 TaskHandle_t updClientSendDiscoverPingTaskHandle = NULL;
 
@@ -47,6 +50,14 @@ void startClientTasks()
         nullptr,
         2,
         &clientLedTaskHandle);
+
+    xTaskCreate(
+        wifiTask,
+        "wifiTask",
+        4096,
+        nullptr,
+        5,
+        &clientWifiTaskHandle);
 }
 
 void startGatewayTasks()
@@ -82,4 +93,12 @@ void startGatewayTasks()
         nullptr,
         2,
         &gatewayWsCommandTaskHandle);
+
+    xTaskCreate(
+        wifiTask,
+        "wifiTask",
+        4096,
+        nullptr,
+        5,
+        &gatewayWifiTaskHandle);
 }

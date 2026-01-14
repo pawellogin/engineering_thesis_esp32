@@ -1,7 +1,10 @@
 #include "network/wifi/wifiManager.h"
 #include "core/debug.h"
 #include "core/config.h"
+#include "network/udp/udpManager.h"
 #include <ESPmDNS.h>
+#include "network/websocket/websocketManager.h"
+#include "system/systemContext.h"
 
 IPAddress getStaticIP()
 {
@@ -54,5 +57,47 @@ bool connectToHotspot(const char *ssid, const char *password, unsigned long time
         LOG_DEBUG("Connection failed.");
         WiFi.disconnect(true);
         return false;
+    }
+}
+
+static void wifiEventHandler(WiFiEvent_t event)
+{
+    switch (event)
+    {
+    case SYSTEM_EVENT_STA_GOT_IP:
+        xEventGroupSetBits(sys.systemEvents, SYS_WIFI_READY);
+        udpInit();
+        webSocketInit();
+        break;
+
+    case SYSTEM_EVENT_STA_DISCONNECTED:
+        xEventGroupClearBits(
+            sys.systemEvents,
+            SYS_WIFI_READY | SYS_UDP_READY | SYS_WS_READY);
+        break;
+
+    default:
+        break;
+    }
+}
+
+void wifiInit()
+{
+    WiFi.onEvent(wifiEventHandler);
+    WiFi.mode(WIFI_STA);
+    WiFi.config(getStaticIP(), getHotspot(), getSubnet());
+}
+
+void wifiTask(void *p)
+{
+    while (true)
+    {
+        if (WiFi.status() != WL_CONNECTED)
+        {
+            LOG_INFO("WiFi connecting...");
+            WiFi.begin(sta_ssid, sta_password);
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(2000));
     }
 }

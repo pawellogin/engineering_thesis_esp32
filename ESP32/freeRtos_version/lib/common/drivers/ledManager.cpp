@@ -2,8 +2,8 @@
 #include "core/config.h"
 #include "core/debug.h"
 
-SemaphoreHandle_t gatewayLedMutex;
-SemaphoreHandle_t clientLedMutex;
+SemaphoreHandle_t ledMutex;
+
 LedController builtInLed;
 LedController buttonLed;
 
@@ -17,8 +17,8 @@ void ledInit(LedController &led, uint8_t pin)
 
 void gatewayLedInitAll()
 {
-    gatewayLedMutex = xSemaphoreCreateMutex();
-    configASSERT(gatewayLedMutex);
+    ledMutex = xSemaphoreCreateMutex();
+    configASSERT(ledMutex);
 
     ledInit(builtInLed, BUILTIN_LED);
     // ledInit(buttonLed, BUTTON_LED_PIN);
@@ -26,21 +26,21 @@ void gatewayLedInitAll()
 
 void clientLedInitAll()
 {
-    clientLedMutex = xSemaphoreCreateMutex();
-    configASSERT(clientLedMutex);
+    ledMutex = xSemaphoreCreateMutex();
+    configASSERT(ledMutex);
 
     ledInit(builtInLed, BUILTIN_LED);
     // ledInit(buttonLed, BUTTON_LED_PIN);
 }
 
-void ledBlink(LedController &led, SemaphoreHandle_t mutex, unsigned long durationMs)
+void ledBlink(LedController &led, unsigned long durationMs)
 {
-    xSemaphoreTake(mutex, portMAX_DELAY);
+    xSemaphoreTake(ledMutex, portMAX_DELAY);
     led.duration = durationMs;
     led.previousMillis = millis();
     led.active = true;
     digitalWrite(led.pin, HIGH);
-    xSemaphoreGive(mutex);
+    xSemaphoreGive(ledMutex);
 }
 
 void ledHandle(LedController &led)
@@ -62,9 +62,9 @@ void gatewayLedTask(void *p)
 {
     while (true)
     {
-        xSemaphoreTake(gatewayLedMutex, portMAX_DELAY);
+        xSemaphoreTake(ledMutex, portMAX_DELAY);
         ledHandle(builtInLed);
-        xSemaphoreGive(gatewayLedMutex);
+        xSemaphoreGive(ledMutex);
 
         vTaskDelay(10 / portTICK_PERIOD_MS); // small delay to yield CPU
     }
@@ -74,9 +74,9 @@ void clientLedTask(void *p)
 {
     while (true)
     {
-        xSemaphoreTake(clientLedMutex, portMAX_DELAY);
+        xSemaphoreTake(ledMutex, portMAX_DELAY);
         ledHandle(builtInLed);
-        xSemaphoreGive(clientLedMutex);
+        xSemaphoreGive(ledMutex);
 
         vTaskDelay(10 / portTICK_PERIOD_MS); // small delay to yield CPU
     }
