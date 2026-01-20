@@ -238,7 +238,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
         WebMessageDTO msg;
         if (deserializeWebMessage(payload, length, msg))
         {
-            LOG_INFO("%d", msg.action);
+            // LOG_INFO("%d", msg.action);
             switch (msg.type)
             {
             case WebMessageType::COMMAND:
@@ -313,14 +313,12 @@ void websocketTask(void *p)
 
 void wsCommandTask(void *p)
 {
-    LOG_INFO("1-wsCommandTask");
     xEventGroupWaitBits(
         sys.systemEvents,
         SYS_WS_READY,
         pdFALSE,
         pdTRUE,
         portMAX_DELAY);
-    LOG_INFO("2-wsCommandTask");
 
     WebMessageDTO msg;
 
@@ -329,7 +327,7 @@ void wsCommandTask(void *p)
 
         if (xQueueReceive(sys.wsCommandQueue, &msg, portMAX_DELAY) == pdTRUE)
         {
-            LOG_INFO("3-wsCommandTask");
+            // LOG_INFO("3-wsCommandTask");
 
             // TODO add fucntion to procces the type, and then inside it the action
             processWebsocketCommand(msg);

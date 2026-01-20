@@ -7,12 +7,15 @@
 #include "core/tasks.h"
 #include "drivers/ledManager.h"
 #include "system/systemContext.h"
+#include "system/clients/clientsManager.h"
 
 void setup()
 {
   Serial.begin(115200);
   LOG_INFO("ESP32 gateway starting...");
   systemContextInit();
+
+  initClients();
 
   wifiInit();
 

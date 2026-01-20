@@ -47,7 +47,10 @@ inline const IPAddress subnetIp(255, 255, 255, 0);
 // =====================
 // UDP Config
 // =====================
-inline constexpr int max_clients = 10;
+inline constexpr int max_clients = 9;
+inline constexpr int offline_timeout = 3000;
+inline constexpr int gateway_board_id = 1;
+inline constexpr int first_client_board_id = 2;
 inline constexpr unsigned int udp_port = 8000;
 inline constexpr unsigned int ws_port = udp_port + 1;
 inline constexpr unsigned int gateway_clients_ping_check_timeout = 5000;

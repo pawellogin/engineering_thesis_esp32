@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include "config.h"
 #include <ArduinoJson.h>
 #include <WebSocketsServer.h>
 
@@ -32,3 +33,8 @@
 #endif
 
 void restartESP();
+
+static inline constexpr bool isGateway(void)
+{
+    return BOARD_ID == gateway_board_id;
+}

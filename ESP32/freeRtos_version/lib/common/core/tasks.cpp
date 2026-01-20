@@ -3,11 +3,14 @@
 #include "network/udp/udpManager.h"
 #include "network/websocket/websocketManager.h"
 #include "drivers/ledManager.h"
+#include "system/clients/clientsManager.h"
 #include "network/wifi/wifiManager.h"
 
 TaskHandle_t gatewayUdpTaskHandle = NULL;
 TaskHandle_t gatewayWebsocketTaskHandle = NULL;
 TaskHandle_t gatewayLedTaskHandle = NULL;
+TaskHandle_t clientPollTaskHandle = NULL;
+TaskHandle_t clientWatchdogTaskHandle = NULL;
 TaskHandle_t gatewayWsCommandTaskHandle = NULL;
 TaskHandle_t gatewayWifiTaskHandle = NULL;
 
@@ -30,18 +33,10 @@ void startClientTasks()
     xTaskCreate(
         udpCommandTask,
         "udpCommandTask",
-        2048,
-        nullptr,
-        2,
-        &udpCommandTaskHandle);
-
-    xTaskCreate(
-        updClientSendDiscoverPingTask,
-        "updClientSendDiscoverPingTask",
         4096,
         nullptr,
         2,
-        &updClientSendDiscoverPingTaskHandle);
+        &udpCommandTaskHandle);
 
     xTaskCreate(
         clientLedTask,
@@ -77,6 +72,22 @@ void startGatewayTasks()
         nullptr,
         2,
         &gatewayWebsocketTaskHandle);
+
+    xTaskCreate(
+        clientWatchdogTask,
+        "clientWatchdogTask",
+        2048,
+        nullptr,
+        2,
+        &clientWatchdogTaskHandle);
+
+    xTaskCreate(
+        clientPollTask,
+        "clientPollTask",
+        2048,
+        nullptr,
+        2,
+        &clientPollTaskHandle);
 
     xTaskCreate(
         gatewayLedTask,

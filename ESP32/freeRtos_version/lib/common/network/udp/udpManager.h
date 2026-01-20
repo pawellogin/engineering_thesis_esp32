@@ -3,22 +3,22 @@
 
 extern WiFiUDP udp;
 
-struct ClientInfo
-{
-    IPAddress ip;
-    unsigned long lastSeen; // for timeout / ping
-    bool connected;
-    uint8_t boardId;
-};
+// struct ClientInfo
+// {
+//     IPAddress ip;
+//     unsigned long lastSeen; // for timeout / ping
+//     bool connected;
+//     uint8_t boardId;
+// };
 
-struct ClientsListDTO
-{
-    // TODO remove count
-    uint8_t count;
-    ClientInfo *items;
-};
+// struct ClientsListDTO
+// {
+//     // TODO remove count
+//     uint8_t count;
+//     ClientInfo *items;
+// };
 
-extern ClientInfo clients[];
+// extern ClientInfo clients[];
 
 enum class ClientRegisterResult
 {
@@ -27,9 +27,9 @@ enum class ClientRegisterResult
     NO_SPACE
 };
 
-ClientRegisterResult registerClient(IPAddress ip, uint8_t boardId);
+// ClientRegisterResult registerClient(IPAddress ip, uint8_t boardId);
 
-ClientsListDTO getClientsListDTO();
+// ClientsListDTO getClientsListDTO();
 
 enum class UdpMessageType
 {
@@ -46,7 +46,8 @@ enum class UdpMessageAction
     RESTART_ALL,
     BLINK_BUILTIN_LED,
     REGISTRATION_ACK,
-    PING,
+    STATUS_REQUEST,
+    STATUS_RESPONSE,
 
     TEST_GAME_START,
     TEST_GAME_STATUS,
@@ -60,11 +61,14 @@ UdpMessage is for transfering data between client and gateway
 
 struct UdpMessageDTO
 {
+    uint8_t boardID;
     UdpMessageType type;
     UdpMessageAction action;
     char data[UDP_DATA_MAX]; // raw JSON string or text
     unsigned long timestamp; // optional, set with millis()
 };
+
+void buildUdpMessage(UdpMessageDTO &msg);
 
 /*
  * outSize is the maximum size a serialized message can be
@@ -75,9 +79,9 @@ bool deserializeUdpMessage(const uint8_t *payload, size_t length, UdpMessageDTO 
 
 void udpInit();
 
-void udpSend(IPAddress ip, const char *msg);
+void udpSend(IPAddress ip, const char *msg, bool showLog = true);
 
-void udpSendAllClients(const char *msg);
+void udpSendAllClients(const char *msg, bool hasToBeOnline = true, bool showLog = true);
 
 void udpHandlePacket();
 
@@ -87,6 +91,8 @@ void udpProccessCommand(const UdpMessageDTO &msg);
 
 void udpCommandTask(void *p);
 
+// TODO remove
 void updClientSendDiscoverPingTask(void *p);
 
+// TODO remove
 IPAddress discoverIPFromMDNS(const char *hostname, unsigned long timeoutMs);

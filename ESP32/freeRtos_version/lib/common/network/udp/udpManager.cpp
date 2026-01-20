@@ -4,6 +4,8 @@
 #include "drivers/ledManager.h"
 #include <ESPmDNS.h>
 #include "system/systemContext.h"
+#include "system/clients/clientsManager.h"
+#include "network/udp/udpCommands.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic error "-Wswitch-enum"
@@ -15,7 +17,7 @@ SemaphoreHandle_t udpMutex = NULL;
  * Remember to use incomingPacket only in this file and not in multiple tasks
  */
 char incomingPacket[255];
-ClientInfo clients[max_clients];
+// ClientInfo clients[max_clients];
 
 /**
  * right now this is not used, probably remove
@@ -45,12 +47,12 @@ void udpInit()
 void udpHandlePacket()
 {
     IPAddress localIp = WiFi.localIP();
-    IPAddress ip = udp.remoteIP();
+    // IPAddress ip = udp.remoteIP();
 
-    if (ip == localIp)
-    {
-        return; // ignore own packets
-    }
+    // if (ip == localIp)
+    // {
+    //     return; // ignore own packets
+    // }
 
     int packetSize = udp.parsePacket();
     if (packetSize)
@@ -70,15 +72,27 @@ void udpHandlePacket()
             return;
         }
 
-        ClientRegisterResult registerResult = registerClient(ip, (uint8_t)atoi(msg.data));
-
-        if (registerResult == ClientRegisterResult::NEW_REGISTERED)
+        // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // canary error here form board id proably
+        // only for client
+        if (isGateway())
         {
-            // TODO
-            // gatewayUtilsRegistrationAck(ip);
+            onClientPacket(msg.boardID);
         }
 
-        LOG_INFO("UDP Received from %s: %s\n", ip.toString().c_str(), incomingPacket);
+        // ClientRegisterResult registerResult = registerClient(ip, (uint8_t)atoi(msg.data));
+
+        // if (registerResult == ClientRegisterResult::NEW_REGISTERED)
+        // {
+        //     // TODO
+        //     // gatewayUtilsRegistrationAck(ip);
+        // }
+
+        // TODO move this to process command
+        if (!(msg.action == UdpMessageAction::STATUS_RESPONSE || msg.action == UdpMessageAction::STATUS_REQUEST))
+        {
+            LOG_INFO("UDP Received from %d: %s\n", msg.boardID, incomingPacket);
+        }
 
         if (deserializeResult)
         {
@@ -97,57 +111,63 @@ void udpHandlePacket()
     }
 }
 
-ClientRegisterResult registerClient(IPAddress ip, uint8_t boardId)
+void buildUdpMessage(UdpMessageDTO &msg)
 {
-    unsigned long now = millis();
-    int freeIndex = -1;
-
-    for (size_t i = 0; i < max_clients; ++i)
-    {
-        if (clients[i].connected)
-        {
-            if (clients[i].ip == ip)
-            {
-                clients[i].lastSeen = now;
-                return ClientRegisterResult::ALREADY_REGISTERED;
-            }
-        }
-        else if (freeIndex < 0)
-        {
-            freeIndex = i;
-        }
-    }
-
-    if (freeIndex >= 0)
-    {
-        LOG_INFO("INNER BOARD ID %d", boardId);
-        clients[freeIndex] = {ip, now, true, boardId};
-        LOG_INFO("Client registered: %s", ip.toString().c_str());
-        return ClientRegisterResult::NEW_REGISTERED;
-    }
-
-    LOG_INFO("No space for new client: %s", ip.toString().c_str());
-    return ClientRegisterResult::NO_SPACE;
+    msg.boardID = BOARD_ID;
+    msg.timestamp = millis();
 }
 
-ClientsListDTO getClientsListDTO()
-{
-    static ClientInfo buffer[max_clients];
-    uint8_t count = 0;
+// ClientRegisterResult registerClient(IPAddress ip, uint8_t boardId)
+// {
+//     unsigned long now = millis();
+//     int freeIndex = -1;
 
-    for (int i = 0; i < max_clients; i++)
-    {
-        if (!clients[i].connected)
-            continue;
+//     for (size_t i = 0; i < max_clients; ++i)
+//     {
+//         if (clients[i].state == ClientState::CLIENT_ONLINE)
+//         {
+//             if (clients[i].ip == ip)
+//             {
+//                 clients[i].lastSeen = now;
+//                 return ClientRegisterResult::ALREADY_REGISTERED;
+//             }
+//         }
+//         else if (freeIndex < 0)
+//         {
+//             freeIndex = i;
+//         }
+//     }
 
-        buffer[count++] = clients[i];
-    }
+//     if (freeIndex >= 0)
+//     {
+//         LOG_INFO("INNER BOARD ID %d", boardId);
+//         clients[freeIndex] = {ip, now, true, boardId};
+//         LOG_INFO("Client registered: %s", ip.toString().c_str());
+//         return ClientRegisterResult::NEW_REGISTERED;
+//     }
 
-    ClientsListDTO dto;
-    dto.count = count;
-    dto.items = buffer;
-    return dto;
-}
+//     LOG_INFO("No space for new client: %s", ip.toString().c_str());
+//     return ClientRegisterResult::NO_SPACE;
+// }
+
+// ClientsListDTO getClientsListDTO()
+// {
+//     static ClientInfo buffer[max_clients];
+//     uint8_t count = 0;
+
+//     for (int i = 0; i < max_clients; i++)
+//     {
+//         if (!clients[i].connected)
+//             continue;
+
+//         buffer[count++] = clients[i];
+//     }
+
+//     ClientsListDTO dto;
+//     dto.count = count;
+//     dto.items = buffer;
+//     return dto;
+// }
 
 static UdpMessageType typeFromString(const String &typeStr)
 {
@@ -173,8 +193,10 @@ static UdpMessageAction actionFromString(const String &actionStr)
         return UdpMessageAction::BLINK_BUILTIN_LED;
     else if (actionStr == "registration_ack")
         return UdpMessageAction::REGISTRATION_ACK;
-    else if (actionStr == "ping")
-        return UdpMessageAction::PING;
+    else if (actionStr == "status_request")
+        return UdpMessageAction::STATUS_REQUEST;
+    else if (actionStr == "status_response")
+        return UdpMessageAction::STATUS_RESPONSE;
     else if (actionStr == "esp_game_test")
         return UdpMessageAction::TEST_GAME_START;
     else if (actionStr == "test_game_status")
@@ -204,8 +226,10 @@ static String actionToString(UdpMessageAction action)
         return "test_game_status";
     case UdpMessageAction::TEST_GAME_END:
         return "test_game_end";
-    case UdpMessageAction::PING:
-        return "ping";
+    case UdpMessageAction::STATUS_REQUEST:
+        return "status_request";
+    case UdpMessageAction::STATUS_RESPONSE:
+        return "status_response";
     case UdpMessageAction::UNKNOWN:
     default:
         LOG_ERROR("Missing actionToString conversion");
@@ -240,11 +264,15 @@ bool serializeUdpMessage(
     size_t outSize,
     size_t &outLen)
 {
+    if (!checkBoardID(msg.boardID))
+        return false;
+
     StaticJsonDocument<256> doc;
 
     doc["type"] = typeToString(msg.type);
     doc["action"] = actionToString(msg.action);
     doc["timestamp"] = msg.timestamp;
+    doc["boardID"] = msg.boardID;
 
     if (msg.data[0] != '\0')
     {
@@ -257,6 +285,7 @@ bool serializeUdpMessage(
 
 bool deserializeUdpMessage(const uint8_t *payload, size_t length, UdpMessageDTO &msg)
 {
+
     StaticJsonDocument<256> doc;
 
     DeserializationError error = deserializeJson(doc, payload, length);
@@ -331,7 +360,19 @@ bool deserializeUdpMessage(const uint8_t *payload, size_t length, UdpMessageDTO 
     else
     {
         LOG_ERROR("Missing or invalid 'timestamp', using millis()");
-        msg.timestamp = millis();
+        return false;
+        // msg.timestamp = millis();
+    }
+
+    if (checkBoardID(doc["boardID"]))
+    {
+        msg.boardID = doc["boardID"];
+    }
+    else
+    {
+        LOG_ERROR("Missing or invalid 'boardID', using 0");
+        msg.boardID = 0;
+        return false;
     }
 
     return true;
@@ -365,8 +406,12 @@ void udpProccessCommand(const UdpMessageDTO &msg)
     case UdpMessageAction::BLINK_BUILTIN_LED:
         ledBlink(builtInLed);
         break;
+    case UdpMessageAction::STATUS_REQUEST:
+        statusResponse();
+        break;
+    case UdpMessageAction::STATUS_RESPONSE:
+        break;
     case UdpMessageAction::REGISTRATION_ACK:
-    case UdpMessageAction::PING:
     case UdpMessageAction::TEST_GAME_START:
     case UdpMessageAction::TEST_GAME_STATUS:
     case UdpMessageAction::TEST_GAME_END:
@@ -400,7 +445,7 @@ void udpCommandTask(void *p)
     }
 }
 
-void udpSend(IPAddress ip, const char *msg)
+void udpSend(IPAddress ip, const char *msg, bool showLog)
 {
     xEventGroupWaitBits(
         sys.systemEvents,
@@ -412,30 +457,35 @@ void udpSend(IPAddress ip, const char *msg)
     udp.beginPacket(ip, udp_port);
     udp.print(msg);
     udp.endPacket();
-    LOG_INFO("UDP Sent to %s: %s\n", ip.toString().c_str(), msg);
+
+    if (showLog)
+    {
+        LOG_INFO("UDP Sent to %s: %s\n", ip.toString().c_str(), msg);
+    }
 }
 
-void udpSendAllClients(const char *msg)
+void udpSendAllClients(const char *msg, bool hasToBeOnline, bool showLog)
 {
     for (size_t i = 0; i < max_clients; ++i)
     {
-        if (clients[i].connected)
+        // LOG_INFO("udp send all client state :%d, ip: %d", clients[i].state, clients[i].boardId);
+        if (!hasToBeOnline || clients[i].state == ClientState::CLIENT_ONLINE)
         {
-            udpSend(clients[i].ip, msg);
+            udpSend(clients[i].ip, msg, showLog);
         }
     }
 }
 
+// TODO remove, changing to ping pong strategy
 void updClientSendDiscoverPingTask(void *p)
 {
     UdpMessageDTO msg;
 
     while (true)
     {
-
-        msg.action = UdpMessageAction::PING;
+        buildUdpMessage(msg);
+        msg.action = UdpMessageAction::STATUS_REQUEST;
         msg.data[0] = '\0';
-        msg.timestamp = millis();
         msg.type = UdpMessageType::COMMAND;
 
         char out[256];
