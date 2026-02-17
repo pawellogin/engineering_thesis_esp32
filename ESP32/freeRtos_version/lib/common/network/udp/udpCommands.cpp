@@ -48,3 +48,28 @@ void statusResponse()
         udpSend(gatewayIp, out, false);
     }
 }
+
+void udpSendButtonEvent(int boardID)
+{
+    UdpMessageDTO msg;
+    buildUdpMessage(msg);
+
+    msg.type = UdpMessageType::COMMAND;
+    msg.action = UdpMessageAction::BUTTON_CLICK;
+
+    // no payload needed
+    msg.data[0] = '\0';
+
+    char out[UDP_DATA_MAX];
+    size_t len = 0;
+
+    bool ok = serializeUdpMessage(msg, out, sizeof(out), len);
+    if (!ok)
+    {
+        LOG_ERROR("serializeUdpMessage failed in udpSendButtonEvent");
+        return;
+    }
+
+    // send to gateway
+    udpSend(gatewayIp, out, false);
+}

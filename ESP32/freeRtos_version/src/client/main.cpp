@@ -13,7 +13,7 @@ void setup()
     Serial.begin(115200);
     LOG_INFO("ESP32 client starting...");
 
-    systemContextInit();
+    systemContextInit(false);
 
     wifiInit();
 

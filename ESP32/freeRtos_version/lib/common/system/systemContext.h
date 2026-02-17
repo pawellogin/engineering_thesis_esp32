@@ -2,18 +2,22 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 #include <freertos/event_groups.h>
+#include "game/gameEngine.h"
 
 struct SystemContext
 {
+    bool isGateway;
     EventGroupHandle_t systemEvents;
 
     QueueHandle_t udpCommandQueue;
     QueueHandle_t wsCommandQueue;
+    QueueHandle_t gameEngineQueue;
+    GameEngine *gameEngine;
 };
 
 extern SystemContext sys;
 
-void systemContextInit();
+void systemContextInit(bool isGateway);
 
 // Event bits
 #define SYS_WIFI_READY (1 << 0)

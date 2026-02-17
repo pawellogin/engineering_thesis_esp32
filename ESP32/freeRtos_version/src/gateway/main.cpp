@@ -8,16 +8,19 @@
 #include "drivers/ledManager.h"
 #include "system/systemContext.h"
 #include "system/clients/clientsManager.h"
+#include "game/gameEngineTask.h"
 
 void setup()
 {
   Serial.begin(115200);
   LOG_INFO("ESP32 gateway starting...");
-  systemContextInit();
+  systemContextInit(true);
 
   initClients();
 
   wifiInit();
+
+  GameEngine_SystemInit(); // prepare engine + queue
 
   gatewayLedInitAll();
   startGatewayTasks();

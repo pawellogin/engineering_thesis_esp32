@@ -6,6 +6,7 @@
 #include "system/systemContext.h"
 #include "system/clients/clientsManager.h"
 #include "network/udp/udpCommands.h"
+#include "system/systemContext.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic error "-Wswitch-enum"
@@ -72,21 +73,10 @@ void udpHandlePacket()
             return;
         }
 
-        // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // canary error here form board id proably
-        // only for client
         if (isGateway())
         {
             onClientPacket(msg.boardID);
         }
-
-        // ClientRegisterResult registerResult = registerClient(ip, (uint8_t)atoi(msg.data));
-
-        // if (registerResult == ClientRegisterResult::NEW_REGISTERED)
-        // {
-        //     // TODO
-        //     // gatewayUtilsRegistrationAck(ip);
-        // }
 
         // TODO move this to process command
         if (!(msg.action == UdpMessageAction::STATUS_RESPONSE || msg.action == UdpMessageAction::STATUS_REQUEST))
@@ -197,12 +187,8 @@ static UdpMessageAction actionFromString(const String &actionStr)
         return UdpMessageAction::STATUS_REQUEST;
     else if (actionStr == "status_response")
         return UdpMessageAction::STATUS_RESPONSE;
-    else if (actionStr == "esp_game_test")
-        return UdpMessageAction::TEST_GAME_START;
-    else if (actionStr == "test_game_status")
-        return UdpMessageAction::TEST_GAME_STATUS;
-    else if (actionStr == "test_game_end")
-        return UdpMessageAction::TEST_GAME_END;
+    else if (actionStr == "button_click")
+        return UdpMessageAction::BUTTON_CLICK;
     else
     {
         LOG_ERROR("Missing udp actionFromString conversion");
@@ -220,12 +206,8 @@ static String actionToString(UdpMessageAction action)
         return "blink_builtin_led";
     case UdpMessageAction::REGISTRATION_ACK:
         return "registration_ack";
-    case UdpMessageAction::TEST_GAME_START:
-        return "esp_game_test";
-    case UdpMessageAction::TEST_GAME_STATUS:
-        return "test_game_status";
-    case UdpMessageAction::TEST_GAME_END:
-        return "test_game_end";
+    case UdpMessageAction::BUTTON_CLICK:
+        return "button_click";
     case UdpMessageAction::STATUS_REQUEST:
         return "status_request";
     case UdpMessageAction::STATUS_RESPONSE:
@@ -412,9 +394,19 @@ void udpProccessCommand(const UdpMessageDTO &msg)
     case UdpMessageAction::STATUS_RESPONSE:
         break;
     case UdpMessageAction::REGISTRATION_ACK:
-    case UdpMessageAction::TEST_GAME_START:
-    case UdpMessageAction::TEST_GAME_STATUS:
-    case UdpMessageAction::TEST_GAME_END:
+    case UdpMessageAction::BUTTON_CLICK:
+        if (!isGateway() || !sys.gameEngineQueue)
+            break;
+        {
+            GameEngineEvent ev{};
+            ev.type = GameEngineEventType::CLIENT_EVENT;
+            ev.client.board_id = msg.boardID;
+            ev.client.type = ClientEventType::BUTTON_PRESS;
+            ev.client.client_time_ms = msg.timestamp;
+            ev.client.gateway_time_ms = millis();
+
+            xQueueSend(sys.gameEngineQueue, &ev, 0);
+        }
         break;
     case UdpMessageAction::UNKNOWN:
     default:

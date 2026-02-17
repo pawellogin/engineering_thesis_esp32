@@ -35,8 +35,6 @@ enum class UdpMessageType
 {
     UNKNOWN,
     COMMAND,
-    // STATUS,
-    // EVENT,
     ERROR,
 };
 
@@ -49,9 +47,7 @@ enum class UdpMessageAction
     STATUS_REQUEST,
     STATUS_RESPONSE,
 
-    TEST_GAME_START,
-    TEST_GAME_STATUS,
-    TEST_GAME_END,
+    BUTTON_CLICK,
 };
 
 /*

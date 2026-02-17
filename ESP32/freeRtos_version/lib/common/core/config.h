@@ -13,7 +13,7 @@ inline constexpr int NETWORK_MODE = 1; // 1=STA, 2=AP
 // =====================
 inline constexpr int BUILTIN_LED = 2;
 inline constexpr int BUTTON_LED = 25;
-inline constexpr int MAIN_BUTTON = 5;
+inline constexpr int MAIN_BUTTON_PIN = 5;
 inline constexpr int LED_STRIP_PIXELS = 24;
 
 // =====================
