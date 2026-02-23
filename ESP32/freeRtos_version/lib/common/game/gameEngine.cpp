@@ -1,6 +1,9 @@
 #include "gameEngine.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "core/debug.h"
+#include "game/games/testGame.h"
+#include "network/websocket/websocketManager.h"
 
 static constexpr TickType_t ENGINE_QUEUE_TIMEOUT = pdMS_TO_TICKS(50);
 
@@ -13,40 +16,68 @@ void GameEngine_Init(GameEngine *engine, QueueHandle_t queue)
 
 void GameEngine_Run(GameEngine *engine)
 {
-    GameEngineEvent ev{};
+    GameEngineEvent gameEvent{};
 
     while (true)
     {
         // Block waiting for an event, but wake up periodically
-        if (xQueueReceive(engine->eventQueue, &ev, ENGINE_QUEUE_TIMEOUT) == pdTRUE)
+        if (xQueueReceive(engine->eventQueue, &gameEvent, ENGINE_QUEUE_TIMEOUT) == pdTRUE)
         {
+            // LOG_DEBUG("game engine queue recive ");
             switch (engine->state)
             {
             /* ================= IDLE ================= */
             case GameEngineState::ENGINE_STATE_IDLE:
             {
-                if (ev.type == GameEngineEventType::WEB_COMMAND &&
-                    ev.web.cmd == WebGameCommandType::START_GAME &&
-                    engine->activeGame)
+                if (gameEvent.type == GameEngineEventType::WEB_COMMAND && gameEvent.web.cmd == WebGameCommandType::START_GAME)
                 {
-                    engine->activeGame->init(engine->activeGame);
-                    engine->activeGame->start(engine->activeGame, ev.tick_time_ms);
-                    engine->state = GameEngineState::ENGINE_STATE_RUNNING;
+                    // Select game
+                    switch (gameEvent.web.game)
+                    {
+                    case GameType::TEST:
+                        engine->activeGame = &testGame;
+                        break;
+
+                    case GameType::REVOLVER:
+                        // engine->activeGame = &reactionGame;
+                        break;
+
+                    default:
+                        engine->activeGame = nullptr;
+                        break;
+                    }
+
+                    if (engine->activeGame)
+                    {
+                        engine->activeGame->init(engine->activeGame);
+
+                        uint32_t now_ms =
+                            xTaskGetTickCount() * portTICK_PERIOD_MS;
+
+                        engine->activeGame->start(
+                            engine->activeGame,
+                            now_ms);
+
+                        engine->state =
+                            GameEngineState::ENGINE_STATE_RUNNING;
+                    }
                 }
+
                 break;
             }
 
             /* ================= RUNNING ================= */
             case GameEngineState::ENGINE_STATE_RUNNING:
             {
-                if (ev.type == GameEngineEventType::CLIENT_EVENT)
+                LOG_DEBUG("ENGINE_STATE_RUNNING");
+                if (gameEvent.type == GameEngineEventType::CLIENT_EVENT)
                 {
                     engine->activeGame->handleClientEvent(
                         engine->activeGame,
-                        &ev.client);
+                        &gameEvent.client);
                 }
-                else if (ev.type == GameEngineEventType::WEB_COMMAND &&
-                         ev.web.cmd == WebGameCommandType::CANCEL_GAME)
+                else if (gameEvent.type == GameEngineEventType::WEB_COMMAND &&
+                         gameEvent.web.cmd == WebGameCommandType::CANCEL_GAME)
                 {
                     engine->activeGame->cancel(engine->activeGame);
                     engine->state = GameEngineState::ENGINE_STATE_ABORTED;
@@ -57,6 +88,7 @@ void GameEngine_Run(GameEngine *engine)
             /* ================= ABORTED ================= */
             case GameEngineState::ENGINE_STATE_ABORTED:
             {
+                LOG_DEBUG("ENGINE_STATE_ABORTED");
                 engine->state = GameEngineState::ENGINE_STATE_IDLE;
                 break;
             }
@@ -70,6 +102,7 @@ void GameEngine_Run(GameEngine *engine)
         if (engine->state == GameEngineState::ENGINE_STATE_RUNNING &&
             engine->activeGame)
         {
+            // LOG_DEBUG("PERIODIC TICK");
             uint32_t now_ms = xTaskGetTickCount() * portTICK_PERIOD_MS;
             engine->activeGame->tick(engine->activeGame, now_ms);
 
@@ -83,12 +116,21 @@ void GameEngine_Run(GameEngine *engine)
         if (engine->state == GameEngineState::ENGINE_STATE_REPORT &&
             engine->activeGame)
         {
+            LOG_DEBUG("ENGINE_STATE_REPORT");
             GameResult result{};
             engine->activeGame->getResult(engine->activeGame, &result);
 
+            WebMessageDTO msg;
+            msg.action = WebMessageAction::UNKNOWN;
+            msg.type = WebMessageType::STATUS;
+            msg.timestamp = millis();
+
+            gameResultToJson(msg.data, WS_DATA_MAX, &result, GAME_MAX_CLIENTS);
+
+            wsSendMessage(msg);
             // TODO:
             // - send result to web app
-            // - send GAME_END to clients
+            // - send GAME_END to clients ( not in every game )
 
             engine->state = GameEngineState::ENGINE_STATE_IDLE;
         }

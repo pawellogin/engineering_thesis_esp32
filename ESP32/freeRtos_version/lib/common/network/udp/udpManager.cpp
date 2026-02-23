@@ -437,7 +437,9 @@ void udpCommandTask(void *p)
     }
 }
 
-void udpSend(IPAddress ip, const char *msg, bool showLog)
+static char test[5] = "abc\0";
+
+void udpSend(IPAddress ip, const char *msg, size_t len, bool showLog)
 {
     xEventGroupWaitBits(
         sys.systemEvents,
@@ -447,23 +449,23 @@ void udpSend(IPAddress ip, const char *msg, bool showLog)
         portMAX_DELAY);
 
     udp.beginPacket(ip, udp_port);
-    udp.print(msg);
+    udp.write((const uint8_t *)msg, len);
     udp.endPacket();
 
     if (showLog)
     {
-        LOG_INFO("UDP Sent to %s: %s\n", ip.toString().c_str(), msg);
+        LOG_INFO("UDP Sent to %s: %.*s\n", ip.toString().c_str(), len, msg);
     }
 }
 
-void udpSendAllClients(const char *msg, bool hasToBeOnline, bool showLog)
+void udpSendAllClients(const char *msg, size_t len, bool hasToBeOnline, bool showLog)
 {
     for (size_t i = 0; i < max_clients; ++i)
     {
         // LOG_INFO("udp send all client state :%d, ip: %d", clients[i].state, clients[i].boardId);
         if (!hasToBeOnline || clients[i].state == ClientState::CLIENT_ONLINE)
         {
-            udpSend(clients[i].ip, msg, showLog);
+            udpSend(clients[i].ip, msg, len, showLog);
         }
     }
 }
@@ -491,7 +493,7 @@ void updClientSendDiscoverPingTask(void *p)
         }
         else
         {
-            udpSend(gatewayIp, out);
+            udpSend(gatewayIp, out, len, false);
         }
         vTaskDelay(1000 * 5 / portTICK_PERIOD_MS); // small delay to yield CPU
     }

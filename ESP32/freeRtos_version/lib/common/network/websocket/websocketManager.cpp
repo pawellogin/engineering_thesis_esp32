@@ -204,7 +204,17 @@ static void processWebsocketCommand(const WebMessageDTO &msg)
     case WebMessageAction::PING:
         break;
     case WebMessageAction::START_ESP_TEST_GAME:
-        // startGame(&espTestGameGateway.base);
+        if (!isGateway() || !sys.gameEngineQueue)
+            break;
+        {
+            LOG_DEBUG("sending game event start game ");
+            GameEngineEvent ev{};
+            ev.type = GameEngineEventType::WEB_COMMAND;
+            ev.web.cmd = WebGameCommandType::START_GAME;
+            ev.web.game = GameType::TEST;
+            xQueueSend(sys.gameEngineQueue, &ev, 0);
+        }
+
         break;
     case WebMessageAction::END_ESP_TEST_GAME:
         // endGame(&espTestGameGateway.base);
@@ -333,6 +343,55 @@ void wsCommandTask(void *p)
             processWebsocketCommand(msg);
         }
     }
+}
+inline bool append(char *out, size_t outSize, size_t &offset, const char *fmt, ...)
+{
+    if (offset >= outSize)
+        return false;
+
+    va_list args;
+    va_start(args, fmt);
+    int written = vsnprintf(out + offset, outSize - offset, fmt, args);
+    va_end(args);
+
+    if (written < 0 || (size_t)written >= outSize - offset)
+    {
+        out[outSize - 1] = '\0';
+        return false;
+    }
+
+    offset += written;
+    return true;
+}
+
+void fooArrayToJson(char *out, size_t outSize, const Foo *arr, size_t count)
+{
+    if (outSize == 0)
+        return;
+
+    size_t offset = 0;
+
+    if (!append(out, outSize, offset, "["))
+        return;
+
+    bool first = true;
+
+    for (size_t i = 0; i < count; i++)
+    {
+        if (arr[i].data[0] == '\0')
+            continue;
+
+        if (!append(out, outSize, offset,
+                    "%s{\"score\":%d,\"data\":\"%s\"}",
+                    first ? "" : ",",
+                    arr[i].score,
+                    arr[i].data))
+            return;
+
+        first = false;
+    }
+
+    append(out, outSize, offset, "]");
 }
 
 #pragma GCC diagnostic pop

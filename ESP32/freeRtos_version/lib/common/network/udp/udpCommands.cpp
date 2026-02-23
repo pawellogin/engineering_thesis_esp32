@@ -22,7 +22,7 @@ void udpBlinkAllClientsBuiltInLed()
     }
     else
     {
-        udpSendAllClients(out);
+        udpSendAllClients(out, len);
     }
 }
 
@@ -45,7 +45,7 @@ void statusResponse()
     }
     else
     {
-        udpSend(gatewayIp, out, false);
+        udpSend(gatewayIp, out, len, false);
     }
 }
 
@@ -71,5 +71,8 @@ void udpSendButtonEvent(int boardID)
     }
 
     // send to gateway
-    udpSend(gatewayIp, out, false);
+    udpSend(gatewayIp, out, len, false);
+
+    char out2[] = "{\"test\":1}";
+    size_t len2 = strlen(out2);
 }

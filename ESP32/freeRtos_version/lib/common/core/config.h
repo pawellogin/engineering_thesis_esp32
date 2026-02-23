@@ -42,7 +42,7 @@ inline const IPAddress staticIp(192, 168, 137, 100 + BOARD_ID);
 inline const IPAddress gatewayIp(192, 168, 137, 101);
 inline const IPAddress subnetIp(255, 255, 255, 0);
 
-#define WS_DATA_MAX 256
+#define WS_DATA_MAX 512
 
 // =====================
 // UDP Config

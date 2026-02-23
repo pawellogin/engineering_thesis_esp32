@@ -29,7 +29,7 @@ void startClientTasks()
 {
     xTaskCreate(
         udpTask,
-        "udpTask",
+        "udpTask client",
         2048,
         nullptr,
         2,
@@ -70,7 +70,7 @@ void startClientTasks()
     xTaskCreate(
         clientLogicTask,
         "clientLogicTask",
-        2048,
+        4096,
         nullptr,
         2,
         nullptr);
@@ -89,8 +89,8 @@ void startGatewayTasks()
 
     xTaskCreate(
         udpTask,
-        "udpTask",
-        2048,
+        "udpTask gateway",
+        8192,
         nullptr,
         2,
         &gatewayUdpTaskHandle);
@@ -114,7 +114,7 @@ void startGatewayTasks()
     xTaskCreate(
         clientPollTask,
         "clientPollTask",
-        2048,
+        8192,
         nullptr,
         2,
         &clientPollTaskHandle);

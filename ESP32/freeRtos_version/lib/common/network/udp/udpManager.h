@@ -75,9 +75,9 @@ bool deserializeUdpMessage(const uint8_t *payload, size_t length, UdpMessageDTO 
 
 void udpInit();
 
-void udpSend(IPAddress ip, const char *msg, bool showLog = true);
+void udpSend(IPAddress ip, const char *msg, size_t len, bool showLog);
 
-void udpSendAllClients(const char *msg, bool hasToBeOnline = true, bool showLog = true);
+void udpSendAllClients(const char *msg, size_t len, bool hasToBeOnline = true, bool showLog = true);
 
 void udpHandlePacket();
 

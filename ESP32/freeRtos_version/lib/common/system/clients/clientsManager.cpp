@@ -76,7 +76,7 @@ void clientPollTask(void *p)
         }
         else
         {
-            udpSendAllClients(out, false, false);
+            udpSendAllClients(out, len, false, false);
             vTaskDelay(pdMS_TO_TICKS(2000));
         }
     }

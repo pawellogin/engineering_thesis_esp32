@@ -5,8 +5,6 @@
 constexpr uint8_t GAME_MAX_CLIENTS = 9;
 constexpr uint8_t GAME_MAX_RESULTS = 9;
 
-
-
 enum class GameEngineEventType : uint8_t
 {
     NONE = 0,
@@ -27,12 +25,16 @@ enum class ClientEventType : uint8_t
     DISCONNECTED
 };
 
-
+enum class GameType
+{
+    TEST = 0,
+    REVOLVER
+};
 
 struct WebGameCommand
 {
     WebGameCommandType cmd;
-    uint32_t game_id;
+    GameType game;
 };
 
 struct ClientGameEvent
@@ -58,13 +60,11 @@ struct GameClientResult
 {
     bool valid;
     uint8_t board_id;
-    uint32_t reaction_time_ms;
+    uint32_t score;
     bool responded;
 };
 
 struct GameResult
 {
-    uint32_t game_id;
-    uint8_t client_count;
     GameClientResult results[GAME_MAX_RESULTS];
 };
