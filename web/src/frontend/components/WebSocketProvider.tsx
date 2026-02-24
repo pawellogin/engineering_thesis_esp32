@@ -20,7 +20,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode; }> = ({ ch
                 console.warn("Invalid config in storage");
             }
         } else {
-            setConfigState({ url: "ws://esp-gateway.local:8001" });
+            // setConfigState({ url: "ws://esp-gateway.local:8001" });
+            setConfigState({ url: "ws://192.168.137.101:8001" });
             console.log("missing ws url");
         }
     }, []);

@@ -41,6 +41,10 @@ static WebMessageAction actionFromString(const String &actionStr)
         return WebMessageAction::GET_SYSTEM_INFO;
     else if (actionStr == "start_esp_test_game")
         return WebMessageAction::START_ESP_TEST_GAME;
+    else if (actionStr == "start_revolver_game")
+        return WebMessageAction::START_REVOLVER_GAME;
+    else if (actionStr == "end_revolver_game")
+        return WebMessageAction::END_REVOLVER_GAME;
     else
     {
         LOG_ERROR("Missing web actionFromString conversion");
@@ -149,6 +153,10 @@ String actionToString(WebMessageAction action)
         return "start_esp_test_game";
     case WebMessageAction::END_ESP_TEST_GAME:
         return "end_esp_test_game";
+    case WebMessageAction::START_REVOLVER_GAME:
+        return "start_revolver_game";
+    case WebMessageAction::END_REVOLVER_GAME:
+        return "end_revolver_game";
     case WebMessageAction::PING:
         return "ping";
     case WebMessageAction::UNKNOWN:
@@ -217,6 +225,22 @@ static void processWebsocketCommand(const WebMessageDTO &msg)
 
         break;
     case WebMessageAction::END_ESP_TEST_GAME:
+        // endGame(&espTestGameGateway.base);
+        break;
+    case WebMessageAction::START_REVOLVER_GAME:
+        if (!isGateway() || !sys.gameEngineQueue)
+            break;
+        {
+            LOG_DEBUG("sending revolver game start game ");
+            GameEngineEvent ev{};
+            ev.type = GameEngineEventType::WEB_COMMAND;
+            ev.web.cmd = WebGameCommandType::START_GAME;
+            ev.web.game = GameType::REVOLVER;
+            xQueueSend(sys.gameEngineQueue, &ev, 0);
+        }
+
+        break;
+    case WebMessageAction::END_REVOLVER_GAME:
         // endGame(&espTestGameGateway.base);
         break;
     case WebMessageAction::GET_SYSTEM_INFO:

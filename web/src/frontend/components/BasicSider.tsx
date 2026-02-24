@@ -9,7 +9,7 @@ import { css } from "@emotion/react";
 import { Layout, Menu, theme } from "antd";
 import { useMemo, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { ESP32DebugPageRoute, EspTestGameRoute, MemoryGameRoute } from "../../backend/routes";
+import { ESP32DebugPageRoute, EspRevolverGameRoute, EspTestGameRoute, MemoryGameRoute } from "../../backend/routes";
 import WebsocketStatusBox from "./WebsocketStatusBox";
 
 const { Content, Sider } = Layout;
@@ -53,6 +53,12 @@ export default function BasicSider(props: BasicSiderProps) {
             icon: <BorderOuterOutlined />,
             label: "ESP test game",
             onClick: () => navigate(EspTestGameRoute)
+        },
+        {
+            key: "5",
+            icon: <BorderOuterOutlined />,
+            label: "Revolver game ",
+            onClick: () => navigate(EspRevolverGameRoute)
         }
     ], [navigate]);
 

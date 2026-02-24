@@ -7,7 +7,8 @@ export type MessageAction =
     'blink_gateway_led' |
     'start_esp_test_game' |
     'end_esp_test_game' |
-    'get_system_info';
+    'get_system_info' |
+    'start_revolver_game';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface MessageDTO<T = any> {

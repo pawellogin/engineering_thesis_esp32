@@ -29,7 +29,8 @@ export default function ESP32DebugPage() {
             type: 'status',
             action: undefined,
             data: 'test',
-            url: 'ws://esp-gateway.local:8001',
+            url: 'ws://192.168.137.101:8001',
+            // url: 'ws://esp-gateway.local:8001',
         });
     }, [form]);
 
@@ -72,6 +73,10 @@ export default function ESP32DebugPage() {
         ws.sendCommand("restart_all");
     }, [ws]);
 
+    const startTestGame = useCallback(() => {
+        ws.sendCommand("start_esp_test_game");
+    }, [ws]);
+
     const restartOnlyClients = useCallback(() => {
         ws.sendCommand("restart_clients");
     }, [ws]);
@@ -112,13 +117,19 @@ export default function ESP32DebugPage() {
                     <Button onClick={() => ws.sendCommand("blink_gateway_led")}>Blink gateway LED</Button>
                     <Button onClick={blinkClientsLED}>Blink clients LED</Button>
                     <Button onClick={restartGatewayAndClients}>Restart gateway and clients </Button>
-                    <Button onClick={restartOnlyClients}>Restart only clients </Button>
+
+                    <Button onClick={startTestGame}>Start test game  </Button>
+
+
+
+                    {/* <Button onClick={restartOnlyClients}>Restart only clients </Button> 
                     <Button onClick={restartOnlyGateway}>Restart only gateway </Button>
                     <Button onClick={getSystemInfo}>Get system info </Button>
                     <Button onClick={connect}>Connect</Button>
                     <Button onClick={sendMessage} type="primary">
                         Send
                     </Button>
+                    */}
                 </div>
 
                 <Col xs={24} md={24}>

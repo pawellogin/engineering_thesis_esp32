@@ -2,4 +2,4 @@
 #include "game/gameBase.h"
 #include <cstddef>
 
-extern GameBase testGame;
+extern GameBase revolverGame;

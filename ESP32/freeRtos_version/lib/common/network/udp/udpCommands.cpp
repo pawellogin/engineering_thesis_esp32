@@ -57,7 +57,6 @@ void udpSendButtonEvent(int boardID)
     msg.type = UdpMessageType::COMMAND;
     msg.action = UdpMessageAction::BUTTON_CLICK;
 
-    // no payload needed
     msg.data[0] = '\0';
 
     char out[UDP_DATA_MAX];
@@ -72,7 +71,4 @@ void udpSendButtonEvent(int boardID)
 
     // send to gateway
     udpSend(gatewayIp, out, len, false);
-
-    char out2[] = "{\"test\":1}";
-    size_t len2 = strlen(out2);
 }

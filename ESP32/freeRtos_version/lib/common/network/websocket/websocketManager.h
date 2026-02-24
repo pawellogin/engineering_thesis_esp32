@@ -25,6 +25,9 @@ enum class WebMessageAction
 
     START_ESP_TEST_GAME,
     END_ESP_TEST_GAME,
+
+    START_REVOLVER_GAME,
+    END_REVOLVER_GAME,
 };
 
 /*

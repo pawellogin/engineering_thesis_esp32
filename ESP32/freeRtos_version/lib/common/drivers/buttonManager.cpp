@@ -51,7 +51,7 @@ void buttonHandle(ButtonController &btn)
         if (!btn.stableState)
         {
             btn.pendingEvent = ButtonEvent::BUTTON_EVENT_CLICK;
-            LOG_INFO("heap free: %u", ESP.getFreeHeap());
+            // LOG_INFO("heap free: %u", ESP.getFreeHeap());
             LOG_DEBUG("button click");
         }
     }

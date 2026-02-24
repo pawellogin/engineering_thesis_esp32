@@ -3,6 +3,7 @@
 #include "freertos/task.h"
 #include "core/debug.h"
 #include "game/games/testGame.h"
+#include "game/games/revolverGame.h"
 #include "network/websocket/websocketManager.h"
 
 static constexpr TickType_t ENGINE_QUEUE_TIMEOUT = pdMS_TO_TICKS(50);
@@ -39,7 +40,7 @@ void GameEngine_Run(GameEngine *engine)
                         break;
 
                     case GameType::REVOLVER:
-                        // engine->activeGame = &reactionGame;
+                        engine->activeGame = &revolverGame;
                         break;
 
                     default:
@@ -72,9 +73,11 @@ void GameEngine_Run(GameEngine *engine)
                 LOG_DEBUG("ENGINE_STATE_RUNNING");
                 if (gameEvent.type == GameEngineEventType::CLIENT_EVENT)
                 {
+                    uint32_t now_ms = xTaskGetTickCount() * portTICK_PERIOD_MS;
+
                     engine->activeGame->handleClientEvent(
                         engine->activeGame,
-                        &gameEvent.client);
+                        &gameEvent.client, now_ms);
                 }
                 else if (gameEvent.type == GameEngineEventType::WEB_COMMAND &&
                          gameEvent.web.cmd == WebGameCommandType::CANCEL_GAME)

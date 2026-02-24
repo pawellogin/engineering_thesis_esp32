@@ -450,7 +450,13 @@ void udpSend(IPAddress ip, const char *msg, size_t len, bool showLog)
 
     udp.beginPacket(ip, udp_port);
     udp.write((const uint8_t *)msg, len);
-    udp.endPacket();
+    // udp.endPacket();
+
+    if (!udp.endPacket())
+    {
+        vTaskDelay(pdMS_TO_TICKS(5));
+        udp.endPacket();
+    }
 
     if (showLog)
     {
