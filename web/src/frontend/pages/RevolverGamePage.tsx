@@ -1,11 +1,11 @@
 /** @jsxImportSource @emotion/react */
 import { css } from "@emotion/react";
-import { Button, Col, Form, Row } from "antd";
-import { useForm } from "antd/es/form/Form";
+import { Button, Col, Form, Input, message, Row } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { RevolverService } from "../../backend/services/revolverService";
 import { useWebSocket } from "../../backend/websocket/useWebSocket";
+import { msg } from "../utils/BasicMessage";
 import { h100w100, pageWrapperCss } from "../utils/CSSC";
-import { formCss } from "./ESP32DebugPage";
 
 type GameClientResult = {
     valid: boolean;
@@ -53,10 +53,15 @@ const buttonRowCss = css({
 });
 
 export default function RevolverGamePage() {
-    const [form] = useForm();
     const ws = useWebSocket();
-
     const [results, setResults] = useState<GameClientResult[] | null>(null);
+
+    const [username1, setUsername1] = useState<string>("");
+    const [username2, setUsername2] = useState<string>("");
+    const [isSaved, setIsSaved] = useState<boolean>(false);
+
+    const [messageApi, contextHolder] = message.useMessage();
+
 
     useEffect(() => {
         if (!ws.lastMessage) return;
@@ -67,12 +72,59 @@ export default function RevolverGamePage() {
 
     const startGame = useCallback(() => {
         setResults(null);
+        setIsSaved(false);
         ws.sendCommand("start_revolver_game");
     }, [ws]);
 
-    // const endGame = useCallback(() => {
-    //     // ws.sendCommand("end_revolver_game");
-    // }, [ws]);
+
+    const normalizedScores = useMemo(() => {
+        if (!results) return null;
+
+        const [p1, p2] = results;
+
+        return {
+            score1: p1.valid && p1.responded ? p1.score : 0,
+            score2: p2.valid && p2.responded ? p2.score : 0
+        };
+    }, [results]);
+
+    const isGameFinished = useMemo(() => {
+        if (!results) return false;
+
+        return results.every(r => r.responded);
+    }, [results]);
+
+    const canSave = useMemo(() => {
+
+        return isGameFinished &&
+            !isSaved &&
+            username1.trim() !== "" &&
+            username2.trim() !== "";
+    }, [isGameFinished, isSaved, username1, username2]);
+
+
+    const saveMatch = useCallback(async () => {
+        if (!normalizedScores || !canSave) {
+            msg.error("Save failed");
+            return;
+        };
+
+        await RevolverService.saveScore(
+            username1.trim(),
+            username2.trim(),
+            normalizedScores.score1,
+            normalizedScores.score2,
+        );
+        msg.success("Saved");
+
+        setIsSaved(true);
+
+        setResults(null);
+        setUsername1("");
+        setUsername2("");
+    }, [normalizedScores, canSave, username1, username2, msg]);
+
+
 
     const winner = useMemo(() => {
         if (!results) return null;
@@ -109,33 +161,63 @@ export default function RevolverGamePage() {
 
     return (
         <div css={pageWrapperCss}>
-            <Form form={form} layout="vertical" css={formCss}>
-                <Row css={h100w100} justify="center" align="middle">
-                    <Col xs={24}>
-                        <div css={circlesWrapperCss}>
-                            <div css={[circleBaseCss, getCircleColorCss("p1")]}>
-                                <div>PLAYER 1</div>
-                                <div>{renderScore(0)}</div>
-                            </div>
-
-                            <div css={[circleBaseCss, getCircleColorCss("p2")]}>
-                                <div>PLAYER 2</div>
-                                <div>{renderScore(1)}</div>
-                            </div>
+            <Row css={h100w100} justify="center" align="middle">
+                <Col xs={24}>
+                    <div css={circlesWrapperCss}>
+                        <div css={[circleBaseCss, getCircleColorCss("p1")]}>
+                            <div>PLAYER 1</div>
+                            <div>{renderScore(0)}</div>
                         </div>
 
-                        <div css={buttonRowCss}>
-                            <Button onClick={startGame}>
-                                START REVOLVER GAME
-                            </Button>
-
-                            {/* <Button onClick={endGame}>
-                                END GAME
-                            </Button> */}
+                        <div css={[circleBaseCss, getCircleColorCss("p2")]}>
+                            <div>PLAYER 2</div>
+                            <div>{renderScore(1)}</div>
                         </div>
+                    </div>
+
+                    <div css={buttonRowCss}>
+                        <Button onClick={startGame}>
+                            START REVOLVER GAME
+                        </Button>
+
+                        <Button onClick={() => { msg.info("asd"); }}>
+                            END GAME
+                        </Button>
+                    </div>
+                </Col>
+
+                <Row gutter={[8, 8]}>
+
+                    <Col span={12}>
+                        <Form.Item label="Player 1 Name">
+                            <Input
+                                value={username1}
+                                onChange={e => setUsername1(e.target.value)}
+                            />
+                        </Form.Item>
+                    </Col>
+
+                    <Col span={12}>
+                        <Form.Item label="Player 2 Name">
+                            <Input
+                                value={username2}
+                                onChange={e => setUsername2(e.target.value)}
+                            />
+                        </Form.Item>
+                    </Col>
+
+                    <Col span={24} css={css({ display: "flex", justifyContent: "center" })}>
+                        <Button
+                            color="default" variant="solid"
+                            onClick={saveMatch}
+                            disabled={!canSave}
+                        >
+                            SAVE SCORES
+                        </Button>
                     </Col>
                 </Row>
-            </Form>
+
+            </Row>
         </div>
     );
 }

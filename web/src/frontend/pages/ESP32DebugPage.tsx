@@ -4,6 +4,7 @@ import { Button, Col, Flex, Form, Input, Row } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import { useCallback, useContext, useEffect } from 'react';
 import type { ClientsListDTO } from '../../backend/dto/ClientsListDTO';
+import { RevolverService } from '../../backend/services/revolverService';
 import type { MessageAction, MessageType } from '../../backend/websocket/types/WsTypes';
 import { useWebSocket } from '../../backend/websocket/useWebSocket';
 import { WebSocketContext } from '../../backend/websocket/WebSocketContext';
@@ -77,17 +78,25 @@ export default function ESP32DebugPage() {
         ws.sendCommand("start_esp_test_game");
     }, [ws]);
 
-    const restartOnlyClients = useCallback(() => {
-        ws.sendCommand("restart_clients");
-    }, [ws]);
+    const sendRevolverScore = useCallback(async () => {
+        await RevolverService.saveScore("pawel", "john", 250, 300);
 
-    const restartOnlyGateway = useCallback(() => {
-        ws.sendCommand("restart_gateway");
-    }, [ws]);
+        const data = await RevolverService.getLeaderboard();
+        console.log(data);
+    }, []);
 
-    const getSystemInfo = useCallback(() => {
-        ws.sendCommand("get_system_info");
-    }, [ws]);
+
+    // const restartOnlyClients = useCallback(() => {
+    //     ws.sendCommand("restart_clients");
+    // }, [ws]);
+
+    // const restartOnlyGateway = useCallback(() => {
+    //     ws.sendCommand("restart_gateway");
+    // }, [ws]);
+
+    // const getSystemInfo = useCallback(() => {
+    //     ws.sendCommand("get_system_info");
+    // }, [ws]);
 
     return (
         <div css={pageWrapperCss}>
@@ -119,6 +128,9 @@ export default function ESP32DebugPage() {
                     <Button onClick={restartGatewayAndClients}>Restart gateway and clients </Button>
 
                     <Button onClick={startTestGame}>Start test game  </Button>
+
+
+                    <Button onClick={sendRevolverScore}>Send revolver score</Button>
 
 
 
