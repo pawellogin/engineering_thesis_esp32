@@ -7,12 +7,12 @@ SemaphoreHandle_t ledMutex;
 LedController builtInLed;
 LedController buttonLed;
 
-void ledInit(LedController &led, uint8_t pin)
+void ledInit(LedController &led, uint8_t pin, bool inverse)
 {
     led.pin = pin;
     led.active = false;
     pinMode(pin, OUTPUT);
-    digitalWrite(pin, LOW);
+    digitalWrite(pin, inverse ? HIGH : LOW);
 }
 
 void gatewayLedInitAll()
@@ -21,7 +21,7 @@ void gatewayLedInitAll()
     configASSERT(ledMutex);
 
     ledInit(builtInLed, BUILTIN_LED);
-    // ledInit(buttonLed, BUTTON_LED_PIN);
+    // ledInit(buttonLed, BUTTON_LED);
 }
 
 void clientLedInitAll()
@@ -30,26 +30,26 @@ void clientLedInitAll()
     configASSERT(ledMutex);
 
     ledInit(builtInLed, BUILTIN_LED);
-    // ledInit(buttonLed, BUTTON_LED_PIN);
+    ledInit(buttonLed, BUTTON_LED, true);
 }
 
-void ledBlink(LedController &led, unsigned long durationMs)
+void ledBlink(LedController &led, unsigned long durationMs, bool inverse)
 {
     xSemaphoreTake(ledMutex, portMAX_DELAY);
     led.duration = durationMs;
     led.previousMillis = millis();
     led.active = true;
-    digitalWrite(led.pin, HIGH);
+    digitalWrite(led.pin, inverse ? LOW : HIGH);
     xSemaphoreGive(ledMutex);
 }
 
-void ledHandle(LedController &led)
+void ledHandle(LedController &led, bool inverse)
 {
 
-    if (led.active && millis() - led.previousMillis >= led.duration)
+    if (led.active && millis() - led.previousMillis >= led.duration && led.override == false)
     {
         led.active = false;
-        digitalWrite(led.pin, LOW);
+        digitalWrite(led.pin, inverse ? HIGH : LOW);
         // LOG_INFO("led turn off");
     }
     else
@@ -76,8 +76,29 @@ void clientLedTask(void *p)
     {
         xSemaphoreTake(ledMutex, portMAX_DELAY);
         ledHandle(builtInLed);
+        ledHandle(buttonLed, true);
         xSemaphoreGive(ledMutex);
 
         vTaskDelay(10 / portTICK_PERIOD_MS); // small delay to yield CPU
     }
+}
+
+void ledTurnOn(LedController &led, bool inverse)
+{
+    xSemaphoreTake(ledMutex, portMAX_DELAY);
+    led.previousMillis = millis();
+    led.override = true;
+    led.active = true;
+    digitalWrite(led.pin, inverse ? LOW : HIGH);
+    xSemaphoreGive(ledMutex);
+}
+
+void ledTurnOff(LedController &led, bool inverse)
+{
+    xSemaphoreTake(ledMutex, portMAX_DELAY);
+    led.previousMillis = millis();
+    led.override = false;
+    led.active = false;
+    digitalWrite(led.pin, inverse ? HIGH : LOW);
+    xSemaphoreGive(ledMutex);
 }

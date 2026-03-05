@@ -189,6 +189,12 @@ static UdpMessageAction actionFromString(const String &actionStr)
         return UdpMessageAction::STATUS_RESPONSE;
     else if (actionStr == "button_click")
         return UdpMessageAction::BUTTON_CLICK;
+    else if (actionStr == "blink_button_led")
+        return UdpMessageAction::BLINK_BUTTON_LED;
+    else if (actionStr == "turn_off_button_led")
+        return UdpMessageAction::TURN_OFF_BUTTON_LED;
+    else if (actionStr == "turn_on_button_led")
+        return UdpMessageAction::TURN_ON_BUTTON_LED;
     else
     {
         LOG_ERROR("Missing udp actionFromString conversion");
@@ -208,6 +214,12 @@ static String actionToString(UdpMessageAction action)
         return "registration_ack";
     case UdpMessageAction::BUTTON_CLICK:
         return "button_click";
+    case UdpMessageAction::BLINK_BUTTON_LED:
+        return "blink_button_led";
+    case UdpMessageAction::TURN_ON_BUTTON_LED:
+        return "turn_on_button_led";
+    case UdpMessageAction::TURN_OFF_BUTTON_LED:
+        return "turn_off_button_led";
     case UdpMessageAction::STATUS_REQUEST:
         return "status_request";
     case UdpMessageAction::STATUS_RESPONSE:
@@ -378,6 +390,8 @@ void udpTask(void *p)
 
 void udpProccessCommand(const UdpMessageDTO &msg)
 {
+    unsigned long time = strtoul(msg.data, nullptr, 10);
+
     switch (msg.action)
     {
         // TODO maybe make separate action for gateway and clients restart
@@ -386,7 +400,18 @@ void udpProccessCommand(const UdpMessageDTO &msg)
         restartESP();
         break;
     case UdpMessageAction::BLINK_BUILTIN_LED:
-        ledBlink(builtInLed);
+        ledBlink(builtInLed, time != 0 ? time : 200);
+        break;
+    case UdpMessageAction::BLINK_BUTTON_LED:
+        LOG_DEBUG("BLINK BUTTON LED : %d", time);
+        ledBlink(builtInLed, time != 0 ? time : 200);
+        ledBlink(buttonLed, time != 0 ? time : 200, true);
+        break;
+    case UdpMessageAction::TURN_ON_BUTTON_LED:
+        ledTurnOn(buttonLed, true);
+        break;
+    case UdpMessageAction::TURN_OFF_BUTTON_LED:
+        ledTurnOff(buttonLed, true);
         break;
     case UdpMessageAction::STATUS_REQUEST:
         statusResponse();

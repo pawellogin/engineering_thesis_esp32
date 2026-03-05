@@ -22,7 +22,7 @@ struct GameBase
     void (*cancel)(GameBase *self);
 
     bool (*isFinished)(GameBase *self);
-    void (*getResult)(GameBase *self, GameResult *out);
+    void (*getResult)(GameBase *self, GameResult *out, uint32_t now_ms);
 
     GameState state;
 };

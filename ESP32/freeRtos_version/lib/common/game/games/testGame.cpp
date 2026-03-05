@@ -106,7 +106,7 @@ static bool testGame_isFinished(GameBase *self)
             self->state == GameState::GAME_STATE_ABORTED);
 }
 
-static void testGame_getResult(GameBase *self, GameResult *out)
+static void testGame_getResult(GameBase *self, GameResult *out, uint32_t now_ms)
 {
 
     for (uint8_t i = 0; i < GAME_MAX_CLIENTS; ++i)

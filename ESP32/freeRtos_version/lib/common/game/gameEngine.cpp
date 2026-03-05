@@ -101,12 +101,13 @@ void GameEngine_Run(GameEngine *engine)
             }
         }
 
+        uint32_t now_ms = xTaskGetTickCount() * portTICK_PERIOD_MS;
+
         /* ================= PERIODIC TICK ================= */
         if (engine->state == GameEngineState::ENGINE_STATE_RUNNING &&
             engine->activeGame)
         {
             // LOG_DEBUG("PERIODIC TICK");
-            uint32_t now_ms = xTaskGetTickCount() * portTICK_PERIOD_MS;
             engine->activeGame->tick(engine->activeGame, now_ms);
 
             if (engine->activeGame->isFinished(engine->activeGame))
@@ -121,7 +122,7 @@ void GameEngine_Run(GameEngine *engine)
         {
             LOG_DEBUG("ENGINE_STATE_REPORT");
             GameResult result{};
-            engine->activeGame->getResult(engine->activeGame, &result);
+            engine->activeGame->getResult(engine->activeGame, &result, now_ms);
 
             WebMessageDTO msg;
             msg.action = WebMessageAction::UNKNOWN;

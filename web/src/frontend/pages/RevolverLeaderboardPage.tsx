@@ -72,7 +72,7 @@ export default function RevolverLeaderboardPage() {
             columns={columns}
             dataSource={data}
             loading={loading}
-            pagination={{ pageSize: 10 }}
+            pagination={{ pageSize: 20 }}
         />
     );
 }

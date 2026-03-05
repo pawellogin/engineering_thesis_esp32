@@ -85,7 +85,7 @@ static void revolverGame_tick(GameBase *self, uint32_t now_ms)
 
     UdpMessageDTO msg;
     buildUdpMessage(msg);
-    msg.action = UdpMessageAction::BLINK_BUILTIN_LED;
+    msg.action = UdpMessageAction::TURN_ON_BUTTON_LED;
     msg.type = UdpMessageType::COMMAND;
     msg.data[0] = '\0';
 
@@ -94,10 +94,12 @@ static void revolverGame_tick(GameBase *self, uint32_t now_ms)
     bool ok = serializeUdpMessage(msg, out, sizeof(out), len);
 
     // check random LED activation
-    for (uint8_t i = 0; i < REVOLVER_MAX_PLAYERS; ++i)
+    if (now_ms >= state.start_trigger_time && state.led_was_triggered == false)
     {
-        if (now_ms >= state.start_trigger_time && state.led_was_triggered == false)
+        for (uint8_t i = 0; i < REVOLVER_MAX_PLAYERS; ++i)
         {
+            LOG_DEBUG("2 id: %d", i);
+
             udpSend(clients[i].ip, out, len, true);
             state.led_was_triggered = true;
         }
@@ -134,17 +136,31 @@ static bool revolverGame_isFinished(GameBase *self)
             self->state == GameState::GAME_STATE_ABORTED);
 }
 
-static void revolverGame_getResult(GameBase *self, GameResult *out)
+static void revolverGame_getResult(GameBase *self, GameResult *outResult, uint32_t now_ms)
 {
+    UdpMessageDTO msg;
+    buildUdpMessage(msg);
+    msg.action = UdpMessageAction::TURN_OFF_BUTTON_LED;
+    msg.type = UdpMessageType::COMMAND;
+    msg.data[0] = '\0';
+
+    size_t len;
+
+    bool ok = serializeUdpMessage(msg, out, sizeof(out), len);
+
+    for (uint8_t i = 0; i < REVOLVER_MAX_PLAYERS; ++i)
+    {
+        udpSend(clients[i].ip, out, len, true);
+    }
 
     for (uint8_t i = 0; i < REVOLVER_MAX_PLAYERS; ++i)
     {
         // LOG_DEBUG("board id: %d, active: %d, click count: %d", i + first_client_board_id, state.active[i], state.click_count[i]);
-        out->results[i].board_id = i + first_client_board_id;
-        out->results[i].responded = state.client_click_time[i] != 0 ? true : false;
-        out->results[i].score = state.client_click_time[i] == 0 ? 0 : (state.client_click_time[i] - state.start_time_ms);
-        out->results[i].valid = true;
-        LOG_DEBUG("board id: %d, responded: %d, score: %d, valid: %d", out->results[i].board_id, out->results[i].responded, out->results[i].score, out->results[i].valid);
+        outResult->results[i].board_id = i + first_client_board_id;
+        outResult->results[i].responded = state.client_click_time[i] != 0 ? true : false;
+        outResult->results[i].score = state.client_click_time[i] == 0 ? 0 : (state.client_click_time[i] - state.start_time_ms);
+        outResult->results[i].valid = true;
+        LOG_DEBUG("board id: %d, responded: %d, score: %d, valid: %d", outResult->results[i].board_id, outResult->results[i].responded, outResult->results[i].score, outResult->results[i].valid);
     }
 }
 
