@@ -26,12 +26,20 @@ export namespace RevolverService {
     }
 
     export async function getLeaderboard(): Promise<RevolverScore[]> {
-        const q = query(collectionRef, orderBy("score", "desc"));
+        const q = query(collectionRef, orderBy("createdAt", "desc"));
         const snapshot = await getDocs(q);
 
-        return snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        })) as RevolverScore[];
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+
+            return {
+                id: doc.id,
+                username1: data.username1,
+                username2: data.username2,
+                score1: data.score1,
+                score2: data.score2,
+                createdAt: data.createdAt?.toDate()
+            };
+        });
     }
 }

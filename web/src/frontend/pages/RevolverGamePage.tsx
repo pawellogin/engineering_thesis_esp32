@@ -1,7 +1,9 @@
 /** @jsxImportSource @emotion/react */
 import { css } from "@emotion/react";
-import { Button, Col, Form, Input, message, Row } from "antd";
+import { Button, Col, Form, Input, Row } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { RevolverLeaderboardPageRoute } from "../../backend/routes";
 import { RevolverService } from "../../backend/services/revolverService";
 import { useWebSocket } from "../../backend/websocket/useWebSocket";
 import { msg } from "../utils/BasicMessage";
@@ -14,44 +16,6 @@ type GameClientResult = {
     responded: boolean;
 };
 
-const circlesWrapperCss = css({
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "3rem",
-    marginBottom: "2rem",
-    flexWrap: "wrap"
-});
-
-const circleBaseCss = css({
-    width: "220px",
-    height: "220px",
-    borderRadius: "50%",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    fontSize: "18px",
-    fontWeight: 600,
-    transition: "all 0.3s ease",
-    backgroundColor: "#444",
-    color: "white",
-    textAlign: "center"
-});
-
-const buttonRowCss = css({
-    display: "flex",
-    flexDirection: "column",
-    gap: "1rem",
-    marginTop: "1rem",
-    alignItems: "center",
-
-    "& button": {
-        maxWidth: "256px",
-        minWidth: "256px"
-    }
-});
-
 export default function RevolverGamePage() {
     const ws = useWebSocket();
     const [results, setResults] = useState<GameClientResult[] | null>(null);
@@ -60,8 +24,7 @@ export default function RevolverGamePage() {
     const [username2, setUsername2] = useState<string>("");
     const [isSaved, setIsSaved] = useState<boolean>(false);
 
-    const [messageApi, contextHolder] = message.useMessage();
-
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!ws.lastMessage) return;
@@ -215,9 +178,56 @@ export default function RevolverGamePage() {
                             SAVE SCORES
                         </Button>
                     </Col>
+                    <Col span={24} css={css({ display: "flex", justifyContent: "center" })}>
+                        <Button
+                            color="default" variant="solid"
+                            onClick={() => { navigate("/" + RevolverLeaderboardPageRoute); }}
+                        >
+                            LEADERBOARD
+                        </Button>
+                    </Col>
                 </Row>
 
             </Row>
         </div>
     );
 }
+
+
+const circlesWrapperCss = css({
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "3rem",
+    marginBottom: "2rem",
+    flexWrap: "wrap"
+});
+
+const circleBaseCss = css({
+    width: "220px",
+    height: "220px",
+    borderRadius: "50%",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    fontSize: "18px",
+    fontWeight: 600,
+    transition: "all 0.3s ease",
+    backgroundColor: "#444",
+    color: "white",
+    textAlign: "center"
+});
+
+const buttonRowCss = css({
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
+    marginTop: "1rem",
+    alignItems: "center",
+
+    "& button": {
+        maxWidth: "256px",
+        minWidth: "256px"
+    }
+});

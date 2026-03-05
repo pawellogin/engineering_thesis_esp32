@@ -59,7 +59,8 @@ export default function BasicSider(props: BasicSiderProps) {
             icon: <BorderOuterOutlined />,
             label: "Revolver game ",
             onClick: () => navigate(EspRevolverGameRoute)
-        }
+        },
+
     ], [navigate]);
 
     return (

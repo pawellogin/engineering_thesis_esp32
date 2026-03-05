@@ -3,13 +3,14 @@
 import { css, Global } from "@emotion/react";
 import { ConfigProvider, theme } from "antd";
 import { Route, Routes } from "react-router-dom";
-import { ESP32DebugPageRoute, EspRevolverGameRoute, EspTestGameRoute, MemoryGameRoute } from "./backend/routes";
+import { ESP32DebugPageRoute, EspRevolverGameRoute, EspTestGameRoute, MemoryGameRoute, RevolverLeaderboardPageRoute } from "./backend/routes";
 import BasicSider from "./frontend/components/BasicSider";
 import { WebSocketProvider } from "./frontend/components/WebSocketProvider";
 import ESP32DebugPage from "./frontend/pages/ESP32DebugPage";
 import EspTestGamePage from "./frontend/pages/EspTestGamePage";
 import MemoryGamePage from "./frontend/pages/MemoryGamePage";
 import RevolverGamePage from "./frontend/pages/RevolverGamePage";
+import RevolverLeaderboardPage from "./frontend/pages/RevolverLeaderboardPage";
 import Welcome from "./frontend/pages/WelcomePage";
 
 
@@ -31,6 +32,7 @@ function App() {
               <Route path={MemoryGameRoute} element={<MemoryGamePage />} />
               <Route path={EspTestGameRoute} element={<EspTestGamePage />} />
               <Route path={EspRevolverGameRoute} element={<RevolverGamePage />} />
+              <Route path={RevolverLeaderboardPageRoute} element={<RevolverLeaderboardPage />} />
             </Routes>
           </BasicSider>
         </WebSocketProvider>
