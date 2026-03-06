@@ -66,7 +66,7 @@ void gatewayLedTask(void *p)
         ledHandle(builtInLed);
         xSemaphoreGive(ledMutex);
 
-        vTaskDelay(10 / portTICK_PERIOD_MS); // small delay to yield CPU
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
@@ -79,7 +79,7 @@ void clientLedTask(void *p)
         ledHandle(buttonLed, true);
         xSemaphoreGive(ledMutex);
 
-        vTaskDelay(10 / portTICK_PERIOD_MS); // small delay to yield CPU
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 

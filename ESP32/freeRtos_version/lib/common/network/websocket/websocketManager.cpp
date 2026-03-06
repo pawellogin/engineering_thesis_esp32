@@ -341,7 +341,7 @@ void websocketTask(void *p)
     while (true)
     {
         webSocketLoop();
-        vTaskDelay(10 / portTICK_PERIOD_MS); // small delay to yield CPU
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
@@ -386,36 +386,6 @@ inline bool append(char *out, size_t outSize, size_t &offset, const char *fmt, .
 
     offset += written;
     return true;
-}
-
-void fooArrayToJson(char *out, size_t outSize, const Foo *arr, size_t count)
-{
-    if (outSize == 0)
-        return;
-
-    size_t offset = 0;
-
-    if (!append(out, outSize, offset, "["))
-        return;
-
-    bool first = true;
-
-    for (size_t i = 0; i < count; i++)
-    {
-        if (arr[i].data[0] == '\0')
-            continue;
-
-        if (!append(out, outSize, offset,
-                    "%s{\"score\":%d,\"data\":\"%s\"}",
-                    first ? "" : ",",
-                    arr[i].score,
-                    arr[i].data))
-            return;
-
-        first = false;
-    }
-
-    append(out, outSize, offset, "]");
 }
 
 #pragma GCC diagnostic pop

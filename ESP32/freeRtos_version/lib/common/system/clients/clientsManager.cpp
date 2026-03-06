@@ -100,6 +100,6 @@ void clientWatchdogTask(void *)
             }
         }
 
-        vTaskDelay(pdMS_TO_TICKS(500));
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

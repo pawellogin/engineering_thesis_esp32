@@ -34,15 +34,6 @@ enum class WebMessageAction
 Message is for transfering data between Web and gateway using websocket
 */
 
-struct Foo
-{
-
-    int score;
-    char data[64];
-};
-
-void fooArrayToJson(char *out, size_t outSize, const Foo *arr, size_t count);
-
 struct WebMessageDTO
 {
     WebMessageType type;

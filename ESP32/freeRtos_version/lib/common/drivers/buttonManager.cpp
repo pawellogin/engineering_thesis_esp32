@@ -77,7 +77,7 @@ void buttonTask(void *p)
         buttonHandle(clientButton);
         xSemaphoreGive(buttonMutex);
 
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
@@ -96,6 +96,6 @@ void clientLogicTask(void *p)
             udpSendButtonEvent(gateway_board_id);
         }
 
-        vTaskDelay(5 / portTICK_PERIOD_MS);
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }

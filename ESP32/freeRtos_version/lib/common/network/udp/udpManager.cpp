@@ -462,8 +462,6 @@ void udpCommandTask(void *p)
     }
 }
 
-static char test[5] = "abc\0";
-
 void udpSend(IPAddress ip, const char *msg, size_t len, bool showLog)
 {
     xEventGroupWaitBits(
@@ -479,7 +477,7 @@ void udpSend(IPAddress ip, const char *msg, size_t len, bool showLog)
 
     if (!udp.endPacket())
     {
-        vTaskDelay(pdMS_TO_TICKS(5));
+        vTaskDelay(pdMS_TO_TICKS(10));
         udp.endPacket();
     }
 
@@ -526,7 +524,7 @@ void updClientSendDiscoverPingTask(void *p)
         {
             udpSend(gatewayIp, out, len, false);
         }
-        vTaskDelay(1000 * 5 / portTICK_PERIOD_MS); // small delay to yield CPU
+        vTaskDelay(pdMS_TO_TICKS(5000));
     }
 }
 
