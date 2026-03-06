@@ -9,6 +9,7 @@
 #include "system/systemContext.h"
 #include "drivers/buttonManager.h"
 
+TaskHandle_t ledStripTaskHandle = NULL;
 TaskHandle_t gatewayUdpTaskHandle = NULL;
 TaskHandle_t gatewayWebsocketTaskHandle = NULL;
 TaskHandle_t gatewayLedTaskHandle = NULL;
@@ -27,6 +28,14 @@ TaskHandle_t updClientSendDiscoverPingTaskHandle = NULL;
 
 void startClientTasks()
 {
+    xTaskCreate(
+        ledStripTask,
+        "ledStripTask",
+        2048,
+        nullptr,
+        5,
+        &ledStripTaskHandle);
+
     xTaskCreate(
         udpTask,
         "udpTask client",

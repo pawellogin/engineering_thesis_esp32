@@ -87,6 +87,7 @@ static void revolverGame_tick(GameBase *self, uint32_t now_ms)
     buildUdpMessage(msg);
     msg.action = UdpMessageAction::TURN_ON_BUTTON_LED;
     msg.type = UdpMessageType::COMMAND;
+    // msg.data[0] = '0' + (uint8_t)ColorEnum::BLUE;
     msg.data[0] = '\0';
 
     size_t len;

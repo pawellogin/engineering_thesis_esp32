@@ -18,7 +18,10 @@ void setup()
     wifiInit();
 
     clientLedInitAll();
+    ledStripInit();
     startClientTasks();
+
+    // ledStripBlink(ColorEnum::BLUE, 300);
 }
 
 void loop()

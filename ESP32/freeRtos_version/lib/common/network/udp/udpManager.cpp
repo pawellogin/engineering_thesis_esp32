@@ -195,6 +195,10 @@ static UdpMessageAction actionFromString(const String &actionStr)
         return UdpMessageAction::TURN_OFF_BUTTON_LED;
     else if (actionStr == "turn_on_button_led")
         return UdpMessageAction::TURN_ON_BUTTON_LED;
+    else if (actionStr == "turn_on_strip_led")
+        return UdpMessageAction::TURN_ON_STRIP_LED;
+    else if (actionStr == "turn_off_strip_led")
+        return UdpMessageAction::TURN_OFF_STRIP_LED;
     else
     {
         LOG_ERROR("Missing udp actionFromString conversion");
@@ -220,6 +224,10 @@ static String actionToString(UdpMessageAction action)
         return "turn_on_button_led";
     case UdpMessageAction::TURN_OFF_BUTTON_LED:
         return "turn_off_button_led";
+    case UdpMessageAction::TURN_ON_STRIP_LED:
+        return "turn_on_strip_led";
+    case UdpMessageAction::TURN_OFF_STRIP_LED:
+        return "turn_off_strip_led";
     case UdpMessageAction::STATUS_REQUEST:
         return "status_request";
     case UdpMessageAction::STATUS_RESPONSE:
@@ -390,7 +398,7 @@ void udpTask(void *p)
 
 void udpProccessCommand(const UdpMessageDTO &msg)
 {
-    unsigned long time = strtoul(msg.data, nullptr, 10);
+    unsigned long simpleData = strtoul(msg.data, nullptr, 10);
 
     switch (msg.action)
     {
@@ -400,18 +408,24 @@ void udpProccessCommand(const UdpMessageDTO &msg)
         restartESP();
         break;
     case UdpMessageAction::BLINK_BUILTIN_LED:
-        ledBlink(builtInLed, time != 0 ? time : 200);
+        ledBlink(builtInLed, simpleData != 0 ? simpleData : 200);
         break;
     case UdpMessageAction::BLINK_BUTTON_LED:
-        LOG_DEBUG("BLINK BUTTON LED : %d", time);
-        ledBlink(builtInLed, time != 0 ? time : 200);
-        ledBlink(buttonLed, time != 0 ? time : 200, true);
+        LOG_DEBUG("BLINK BUTTON LED : %d", simpleData);
+        ledBlink(builtInLed, simpleData != 0 ? simpleData : 200);
+        ledBlink(buttonLed, simpleData != 0 ? simpleData : 200, true);
         break;
     case UdpMessageAction::TURN_ON_BUTTON_LED:
         ledTurnOn(buttonLed, true);
         break;
     case UdpMessageAction::TURN_OFF_BUTTON_LED:
         ledTurnOff(buttonLed, true);
+        break;
+    case UdpMessageAction::TURN_ON_STRIP_LED:
+        ledStripTurnOn(simpleData == 0 ? ColorEnum::RED : (ColorEnum)simpleData);
+        break;
+    case UdpMessageAction::TURN_OFF_STRIP_LED:
+        ledStripTurnOff();
         break;
     case UdpMessageAction::STATUS_REQUEST:
         statusResponse();
